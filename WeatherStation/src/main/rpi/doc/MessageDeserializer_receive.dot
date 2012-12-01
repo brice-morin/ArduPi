@@ -1,0 +1,12 @@
+digraph finite_state_machine {
+	rankdir=LR;
+	INIT_STATE [shape=circle label = "", style = filled, color = "black"];
+		INIT_STATE -> Idle [label="init"];
+	Idle [label="Idle{i}", shape = ellipse];
+		Idle -> ReceiveMessage [label="serial?serial_rx(c){a}"];
+	ReceiveMessage [label="ReceiveMessage\nserial?serial_rx(c){a}\nserial?serial_rx(c){a}", shape = ellipse];
+		ReceiveMessage -> Escape [label="serial?serial_rx(c){a}"];
+		ReceiveMessage -> Idle [label="serial?serial_rx(c){a}"];
+	Escape [label="Escape", shape = ellipse];
+		Escape -> ReceiveMessage [label="receive:serial?serial_rx{a}"];
+}

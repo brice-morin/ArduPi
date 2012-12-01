@@ -1,0 +1,119 @@
+import "../datatypes.thingml"
+import "./Serial.thingml"
+
+//Defines constants and methods to manage variable size packets (with maximum size defined by MAX_PACKET_SIZE)
+/*
+*  For all serializable datatype called D (D is the name of the ThingML datatype, not the underlying platform-specific datatype), define:
+*  - lengthD() : Integer, which returns the size in bytes of the serialized type. This should be defined here to ensure the consistencies of all serializer.
+*  - serializeD(d : D, bytes : Byte[MAX_PACKET_SIZE], startPosition : Integer), which puts the serialized datatype in the buffer, starting at bytes[startPosition]. This should be defined in a PSM thing that include this thing.
+*  - deserializeD(bytes : Byte[MAX_PACKET_SIZE], startPosition : Integer) : D, which gets the datatype from its serialized form, starting from bytes[startPosition]. This should be defined in a PSM thing that include this thing.
+*  The idea is inspired by the ByteBuffer provided by Java (http://download.oracle.com/javase/1.4.2/docs/api/java/nio/ByteBuffer.html), 
+*  but this implementation aims at being as independent as possible to any specific platform, so that ThingML can seamlessly compile to different plaforms (Scala/Java, C, etc)
+* 
+*  ThingML comes along with serialize/deserialise functions for all the datatypes defined in the ThingML framework.
+*  User defined datatypes that needs to be serialized should come along these functions.
+*/
+thing fragment PacketManager 
+@c_headers "#<stdint.h>"
+{
+        //Define the length (in bytes) of all the datatypes
+        //TODO: Do it for all the other datatypes provided by ThingML
+    readonly property lengthInteger : Byte = 2    
+    readonly property lengthString : Byte = 8
+    readonly property lengthUInt16 : Byte = 2
+    
+    
+    readonly property MAX_PACKET_SIZE : Integer = 16
+     
+    readonly property START_BYTE : Byte = '0x12'
+	readonly property STOP_BYTE : Byte = '0x13'
+	readonly property ESCAPE_BYTE : Byte = '0x7D'
+          
+    property CODE_POSITION : Integer = 3
+    property LENGTH_POSITION : Integer = 4
+    property DATA_POSITION : Integer = 5
+     
+    property buffer : Byte[16]
+	property index : Integer = 0
+     
+     function setHeader(code : Byte, length : Byte) 
+     do
+        index = 0
+	 	storeByte(1) // source addr (not used)
+	 	storeByte(0) // target addr (not used)
+	 	storeByte(0) // frame num (not used)
+        CODE_POSITION = index
+        storeByte(code)
+        LENGTH_POSITION = index
+        storeByte(length)
+        DATA_POSITION = index
+        //We pad the rest with stop byte
+        /*while(index < MAX_PACKET_SIZE) do
+            storeByte(STOP_BYTE)
+        end*/
+        index = DATA_POSITION
+	 end
+
+    function storeByte(b : Byte) do
+        /*print("store byte ")
+        'printf("%d", ' & b & ');' 
+        print(" at index ")
+        'printf("%d", ' & index & ');' 
+        print("\n")*/
+        if (index == MAX_PACKET_SIZE) do
+            error("BUFFER OVERFLOW\n")
+        end
+        if (index < MAX_PACKET_SIZE) do
+	 	  buffer[index] = b
+		  index = index + 1
+        end
+	end
+
+    function readByte() : Byte do
+        var b : Byte
+        if (index < MAX_PACKET_SIZE) do
+	 	  b = buffer[index]
+          index = index + 1
+        end
+        if (index == MAX_PACKET_SIZE) do
+          error("BUFFER OVERFLOW: trying to read out of buffer boundaries")
+          b = STOP_BYTE
+        end
+        return b
+	end
+}
+
+thing fragment Serializer includes PacketManager, /*SerialClientPort*/ SerialMsgs {
+
+	required port serial {
+		sends serial_tx
+	}
+
+    function send() do
+        //print("send start byte = " + START_BYTE)
+        serial!serial_tx(START_BYTE)
+        readonly var stop : Integer = DATA_POSITION + buffer[LENGTH_POSITION]
+        var i : Integer = 0
+        while(i < stop) do
+            var b : Byte = buffer[i]
+            if (b == START_BYTE or b == STOP_BYTE or b == ESCAPE_BYTE) do
+                //print("send escape byte = " + ESCAPE_BYTE)
+                serial!serial_tx(ESCAPE_BYTE)
+            end
+            //print("send data byte(" + i + ") = " + b)
+            serial!serial_tx(b)
+            i = i + 1
+        end
+        //print("send stop byte = " + STOP_BYTE)
+        serial!serial_tx(STOP_BYTE)
+        index = 0
+    end
+}
+
+thing fragment Deserializer includes PacketManager, /*SerialClientPort*/ SerialMsgs {    
+    //function receive() do end//should be refined in a PSM thing
+    
+    required port serial {
+		receives serial_rx
+	}
+}

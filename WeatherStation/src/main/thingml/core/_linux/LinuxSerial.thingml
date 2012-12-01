@@ -1,0 +1,173 @@
+/**
+ * Linux Simple Serial Port Component.
+ *
+ * TODO:
+ * - Add handler to close the serial device
+ * - Add code to parameterize baudrate (now fixed to 9600)
+ * - Add message to querry the device connection status
+ * - Maybe add auto-reconnect feature
+ *
+ */
+
+import "../Serial.thingml"
+ 
+thing LinuxSerial includes Serial
+@c_header "
+#include <string.h> // string function definitions
+#include <fcntl.h> // File control definitions
+#include <errno.h> // Error number definitions
+#include <termios.h> // POSIX terminal control definitions
+#include <time.h>   // time calls
+
+#define TIMEOUT 10 // timeout waiting for messages from the serial device
+#define INPUT_BUFFER_SIZE 128 // for possible future optimizations"
+{
+
+	function open_serial(device : String, baudrate : Int16) : Integer do
+		'int result;
+	
+		printf("Opening Serial device at %s...\n", '&device&');
+		//result = open('&device&', O_RDWR | O_NOCTTY | O_NDELAY);
+
+        result = open('&device&', O_RDWR | O_NOCTTY | O_NDELAY | O_NONBLOCK);
+	
+		if (result < 0) {
+			perror("Error opening Serial port");
+		}
+		else {
+	
+			//fcntl(result, F_SETFL, FNDELAY); // To make reading non-blocking ?
+			//fcntl(result, F_SETFL, 0); // To restore normal blocking read from the port
+	
+			printf("Configuring port %s...\n", '&device&');
+	
+			struct termios port_settings;
+	
+			tcgetattr(result, &port_settings); // get current options
+	
+			cfsetispeed(&port_settings, B9600);    // set baud rates to 115200
+			cfsetospeed(&port_settings, B9600);
+	
+
+
+            port_settings.c_cflag = B9600 | CS8 | CLOCAL | CREAD;
+            port_settings.c_iflag = IGNPAR | ICRNL;
+            port_settings.c_oflag = 0;
+            //Flush line and set options
+            tcflush(result, TCIFLUSH);
+            tcsetattr(result, TCSANOW, &port_settings);
+
+
+			//port_settings.c_cflag &= ~PARENB;	// Set 8N1, No Parity
+			//port_settings.c_cflag &= ~CSTOPB;
+			//port_settings.c_cflag &= ~CSIZE;
+			//port_settings.c_cflag |= CS8;
+	
+			//port_settings.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); // Raw input mode
+	
+			//port_settings.c_oflag &= ~OPOST; // Raw output mode
+	
+			//tcsetattr(result, TCSANOW, &port_settings);    // apply the settings to the port
+		    sleep(1); // wait a bit
+        }'
+		return 'result'
+	
+	end
+
+	function send_byte(device : Integer, byte: UInt8) : Integer do
+		'int n;
+		unsigned char data[1];
+		data[0] = '& byte &';
+        
+		n = write('& device &', data, 1);
+		if (n < 0) {
+			perror("Error writing to Serial device");
+			return -1;
+		}
+		return 0;'
+	end
+
+	function start_receiver_process(device : Integer) 
+	@fork_linux_thread "true"
+	do
+		'char buffer[INPUT_BUFFER_SIZE]; // Data read from the ESUSMS device
+
+		int n; // used to store the results of select and read
+		int i; // loop index
+	
+		while (1) {
+	
+			/*struct timeval timeout; // timeout waiting for incoming data
+			timeout.tv_sec = TIMEOUT; 	// 10 second timeout
+			timeout.tv_usec = 0;*/
+	
+			fd_set rdfs;		// The file descriptor to wait on
+			FD_ZERO( &rdfs );
+			FD_SET( '& device &', &rdfs ); // set to the esusms fd
+	
+			n = select('& device &'+1, &rdfs, NULL, NULL, NULL); // NO Timeout here (last parameter)
+	
+			if (n < 0) {
+				perror("Error waiting for incoming data from Serial device");
+				break;
+			}
+			else if (n == 0) { // timeout
+				printf("Timeout waiting for incoming data from Serial device\n");
+				break;
+			}
+			else { // there is something to read
+	
+				n = read('& device &', &buffer, INPUT_BUFFER_SIZE * sizeof(char));
+	
+				if (n<0) {
+					perror("Error reading from Serial device");
+					break;
+				}
+				else if (n==0) {
+					printf("Nothing to read from Serial device\n"); // Should never happen unless there are too many transmission errors with wrong CRCs
+					break;
+				}
+				else { // There are n incoming bytes in buffer
+	
+					//char c;
+					//int size;
+					for (i = 0; i<n; i++) {
+                        /*if (buffer[i] == 0x12) {
+                            'serial!serial_rx('0x7D')'
+                        }
+                        else if (buffer[i] == 0x13) {
+                            'serial!serial_rx('0x7D')'
+                        }
+                        else if (buffer[i] == 0x7D) {
+                            'serial!serial_rx('0x7D')'
+                        }*/
+						'serial!serial_rx('buffer[i]')'
+					}
+				}
+			}
+		}'
+		serial!serial_closed()
+	end
+	
+	statechart LinuxSerialImpl init Running {
+	
+		property serial_device : Integer
+	
+		state Running {
+				
+			internal event m : serial?serial_open
+			action do 
+				serial_device = open_serial(m.device, m.baudrate)
+                if (serial_device > 0) do
+                    start_receiver_process(serial_device)
+				    serial!serial_opened()
+                end
+			end
+			
+			internal event c : serial?serial_tx
+			action send_byte(serial_device, c.b)
+		}
+		
+	}	 
+
+}

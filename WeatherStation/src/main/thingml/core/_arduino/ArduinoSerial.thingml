@@ -1,0 +1,28 @@
+import "../Serial.thingml"
+import "../scheduler.thingml"
+
+thing SerialArduino includes Serial, ThingMLSchedulerMsg
+@pim "Serial"
+@platform "arduino"
+@singleton "true"
+{
+    required port Polling 
+    {
+        receives poll
+    }
+
+    statechart SerialImpl init Receiving 
+    {        
+        state Receiving 
+        {
+            on entry 'Serial.begin(9600);'
+            
+            internal event Polling?poll
+            guard 'Serial.available()' > 0
+            action serial!serial_rx ('(char)Serial.read()')
+            
+            internal event m : serial?serial_tx
+            action 'Serial.print(' & m.b & ');'
+        }
+    }
+}
