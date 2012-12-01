@@ -1,7 +1,10 @@
 Weather Station Arduino - Raspberry Pi
 ======================================
 
-The weather station is composed of an Arduino board equipped with an electronic brick shield, connected via USB to a Raspberry Pi board. 
+The weather station is composed of:
+* an Arduino board equipped with
+* an electronic brick shield, connected via USB to
+* a Raspberry Pi board. 
 
 The Arduino board contains all the necessary logic to sample temperature and light and locally display these values on a LCD screen.
 
@@ -19,11 +22,11 @@ Beginners are invited to directly use the code that has been generated from Thin
 The code located in src/main/arduino should be uploaded on the Arduino board (please refer to the Arduino website to get instructions on how to flash an Arduino board). After the code has been uploaded, you can connect the Arduino board to your Raspberry Pi.
 
 Electronic bricks should be connected on the Arduino shield as follows:
-	- LCD Screen on Bus2
-	- Button on Pin8
-	- LED on Pin9
-	- Light sensor on Pin1
-	- Temperature sensor on Pin3
+* LCD Screen on Bus2
+* Button on Pin8
+* LED on Pin9
+* Light sensor on Pin1
+* Temperature sensor on Pin3
 
 The code located in src/main/rpi should be uploaded (via SCP or USB stick) and compiled (using make). 
 
