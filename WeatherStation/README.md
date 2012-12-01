@@ -6,6 +6,8 @@ The weather station is composed of:
 * an electronic brick shield, connected via USB to
 * a Raspberry Pi board. 
 
+![Weather Station](https://raw.github.com/brice-morin/ArduPi/master/WeatherStation/images/WeatherStation.jpg)
+
 The Arduino board contains all the necessary logic to sample temperature and light and locally display these values on a LCD screen.
 
 Every 2 seconds, the Raspberry Pi remotely changes the LCD display of the Arduino board, which in turn sends the displayed value (either temprature or light) to the Pi.
