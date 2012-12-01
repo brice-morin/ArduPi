@@ -2,8 +2,11 @@ Weather Station Arduino - Raspberry Pi
 ======================================
 
 The weather station is composed of an Arduino board equipped with an electronic brick shield, connected via USB to a Raspberry Pi board. 
+
 The Arduino board contains all the necessary logic to sample temperature and light and locally display these values on a LCD screen.
+
 Every 2 seconds, the Raspberry Pi remotely changes the LCD display of the Arduino board, which in turn sends the displayed value (either temprature or light) to the Pi.
+
 Alternatively, it is possible to push the button on the Arduino to force the Arduino to send data to the Pi.
 
 All the source code (in C) if fully generated from ThingML specifications.
@@ -22,7 +25,9 @@ Electronic bricks should be connected on the Arduino shield as follows:
 	- Light sensor on Pin1
 	- Temperature sensor on Pin3
 
-The code located in src/main/rpi should be uploaded (via SCP or USB stick) and compiled (using make). We also provide pre-compiled version of MongoDB both for the hard-float (recommended) or soft-float versions of Wheezy in the lib folder. Alternatively (not recommended) you can build MongoDB from sources. You should now create a folder (mkdir <name-of-the-folder-to-create>), which will contain all the data to be stored in the database. Then run: mongod --dbpath="<path-to-the-folder-you-created>" You can now run the executable (obtained from compiling the source code using make) using: ./Raspinode
+The code located in src/main/rpi should be uploaded (via SCP or USB stick) and compiled (using make). 
+
+You can now run the executable (obtained from compiling the source code using make) using: ./Raspinode
 
 Note: We assume the Arduino board is connected to your Raspberry Pi on /dev/ttyACM0 before you run the program.
 
