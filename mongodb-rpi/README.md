@@ -8,3 +8,5 @@ Please comment on:
 https://jira.mongodb.org/browse/SERVER-1811
 
 to get full and official ARM support for MongoDB
+
+Note: these are the binaries for the HardFloat version of Raspian Wheezy
