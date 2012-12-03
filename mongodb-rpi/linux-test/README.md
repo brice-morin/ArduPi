@@ -4,15 +4,33 @@ Install
 2. Copy the libraries (*.so files) provided on this repo in /lib
 3. In /lib run ldconfig to properly install those libs
 4. you can run MongoDB: 
-	cd /opt/mongo/bin 
-	./mongod --dbpath="/home/pi/db" --rest //note: make sure you have created the db folder prior execution
+
+```bash
+$ cd /opt/mongo/bin 
+$ ./mongod --dbpath="/home/pi/db" --rest //note: make sure you have created the db folder prior execution
+```
+
 5. compile mongo_client.c using 
-	make
+
+```bash
+$ make
+```
+
 6. run the program
-	./mongo_client
+
+```bash
+$ ./mongo_client
+```
+
 7. In a web-browser (on the same LAN as your RPi) go to (check the IP address of your RPi using ifconfig)
-	http://raspberry-pi-IP:28017/sensapp/sensor1/_find
+
+```
+http://raspberry-pi-IP:28017/sensapp/sensor1/_find
+```
+
 8. You should see something like (with probably less data):
+
+```json
 {
   "offset" : 0,
   "rows": [
@@ -47,3 +65,4 @@ Install
   "query" : {} ,
   "millis" : 9
 }
+```
