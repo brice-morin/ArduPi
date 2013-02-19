@@ -1,0 +1,109 @@
+import "../db.thingml"
+
+
+/*****************************************************************************
+ * Definition of the built-in things and messages
+ *****************************************************************************/
+ 
+ datatype Timestamp
+ @c_type "long int";
+ 
+thing fragment LinuxDB includes DB 
+@c_header "
+#include <stdio.h>
+#include <time.h>
+#include \"mongo.h\"
+"
+@c_global "
+#include <stdio.h>
+#include <time.h>
+#include \"mongo.h\"
+
+void push_int(char* db, char* sensor, int value);
+void push_string(char* db, char* sensor, char* value);
+int init();
+int destroy();
+long int timestamp();
+void initEntry();
+void pushEntry(char* dbName);
+
+mongo conn[1];
+bson b[1];
+"
+{
+
+    function init_db() : Integer do
+    '
+    int status = mongo_client( conn, "127.0.0.1", 27017 );
+    if( status != MONGO_OK ) {
+      switch ( conn->err ) {
+        case MONGO_CONN_NO_SOCKET:  printf( "no socket\n" ); return 1;
+        case MONGO_CONN_FAIL:       printf( "connection failed\n" ); return 1;
+        case MONGO_CONN_NOT_MASTER: printf( "not master\n" ); return 1;
+      }
+      return conn->err;
+    } else {
+	   return 0;
+    }
+    '
+    end
+    
+    function destroy() : Integer do
+    '
+	mongo_destroy( conn );
+	bson_destroy( b );
+	return 0;    
+    '
+    end
+    
+    function timestamp() : Timestamp do
+    '
+    long int ltime = /*static_cast<long int>*/ time(NULL);
+    return ltime;
+    '
+    end
+    
+    function initEntry() do
+    '
+	bson_init( b );
+    bson_append_long(b, "t", ' & timestamp() & ');    
+    '
+    end
+    
+    function pushEntry(db : String) do
+    '
+    mongo_write_concern options;
+	mongo_write_concern_init(&options);
+	bson_finish( b );
+	mongo_insert( conn, ' & db & ', b, &options);
+	bson_destroy( b );
+    '
+    end
+    
+    function push_int(db : String, sensor : String, value : Integer) do
+	initEntry()
+    'bson_append_int(b, ' & sensor & ', ' & value & ');'
+	pushEntry(db)
+    end
+    
+    statechart LinuxDBImpl init Running {
+	
+		state Running {
+				
+			internal event m : db?db_init
+			action do 
+                if (init_db() == 0) do
+                    db!db_init_done()
+                end
+			end
+
+
+            internal event m : db?push_int
+            action do
+                push_int(m.db, m.sensor, m.value)
+            end			
+		}
+		
+	}	
+
+}

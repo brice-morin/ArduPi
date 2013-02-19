@@ -1,0 +1,10 @@
+digraph finite_state_machine {
+	rankdir=LR;
+	INIT_STATE [shape=circle label = "", style = filled, color = "black"];
+		INIT_STATE -> Idle [label="init"];
+	Idle [label="Idle", shape = ellipse];
+		Idle -> Counting [label="timer?timer_start{a}"];
+	Counting [label="Counting\nclock?clock_tick(c){a}", shape = ellipse];
+		Counting -> Idle [label="timer?timer_cancel"];
+		Counting -> Idle [label="clock?clock_tick(c){a}"];
+}
