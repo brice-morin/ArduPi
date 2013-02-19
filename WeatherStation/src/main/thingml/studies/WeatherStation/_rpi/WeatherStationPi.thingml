@@ -229,6 +229,9 @@ thing SerialProxy includes SerialMsgs, StartMsg
            
         internal event rx : serial?serial_rx
         action do
+            /*print("Receiving from serial port: ")
+            'printf("%d", ' & rx.b & ');'
+            print("\n")*/
             deserializer!serial_rx(rx.b)
         end
         

@@ -25,8 +25,8 @@ thing fragment PacketManager
     
     readonly property MAX_PACKET_SIZE : Integer = 16
      
-    readonly property START_BYTE : Byte = '0x12'
-	readonly property STOP_BYTE : Byte = '0x13'
+    readonly property START_BYTE : Byte = '0x7F'
+	readonly property STOP_BYTE : Byte = '0x7E'
 	readonly property ESCAPE_BYTE : Byte = '0x7D'
           
     property CODE_POSITION : Integer = 3

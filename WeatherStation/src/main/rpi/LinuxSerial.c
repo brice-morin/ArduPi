@@ -30,49 +30,47 @@ void f_LinuxSerial_start_receiver_process(struct LinuxSerial_Instance *_instance
 int f_LinuxSerial_open_serial(struct LinuxSerial_Instance *_instance, char * device, int16_t baudrate) {
 {
 int result;
+        struct termios port_settings;
 	
 		printf("Opening Serial device at %s...\n", device);
-		//result = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
-
-        result = open(device, O_RDWR | O_NOCTTY | O_NDELAY | O_NONBLOCK);
+		result = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
 	
 		if (result < 0) {
 			perror("Error opening Serial port");
 		}
+		else if (tcgetattr(result, &port_settings) < 0) {// try to get current options
+			perror("Error opening Serial port: could not get serial port attributes");
+		}
 		else {
-	
-			//fcntl(result, F_SETFL, FNDELAY); // To make reading non-blocking ?
-			//fcntl(result, F_SETFL, 0); // To restore normal blocking read from the port
-	
 			printf("Configuring port %s...\n", device);
 	
-			struct termios port_settings;
 	
-			tcgetattr(result, &port_settings); // get current options
-	
-			cfsetispeed(&port_settings, B9600);    // set baud rates to 115200
+            // set IO baud rates to 9600 (same as on the Arduino side)
+			cfsetispeed(&port_settings, B9600);
 			cfsetospeed(&port_settings, B9600);
-	
+	            
+            // 8N1
+            port_settings.c_cflag &= ~PARENB;
+            port_settings.c_cflag &= ~CSTOPB;
+            port_settings.c_cflag &= ~CSIZE;
+            port_settings.c_cflag |= CS8;
+            // no flow control
+            port_settings.c_cflag &= ~CRTSCTS;
 
+            port_settings.c_cflag |= CREAD | CLOCAL;  // turn on READ & ignore ctrl lines
+            port_settings.c_iflag &= ~(IXON | IXOFF | IXANY); // turn off s/w flow ctrl
 
-            port_settings.c_cflag = B9600 | CS8 | CLOCAL | CREAD;
-            port_settings.c_iflag = IGNPAR | ICRNL;
-            port_settings.c_oflag = 0;
-            //Flush line and set options
-            tcflush(result, TCIFLUSH);
-            tcsetattr(result, TCSANOW, &port_settings);
+            port_settings.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); // make raw
+            port_settings.c_oflag &= ~OPOST; // make raw
 
+            // see: http://unixwiz.net/techtips/termios-vmin-vtime.html
+            port_settings.c_cc[VMIN]  = 0;
+            port_settings.c_cc[VTIME] = 20;
 
-			//port_settings.c_cflag &= ~PARENB;	// Set 8N1, No Parity
-			//port_settings.c_cflag &= ~CSTOPB;
-			//port_settings.c_cflag &= ~CSIZE;
-			//port_settings.c_cflag |= CS8;
-	
-			//port_settings.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); // Raw input mode
-	
-			//port_settings.c_oflag &= ~OPOST; // Raw output mode
-	
-			//tcsetattr(result, TCSANOW, &port_settings);    // apply the settings to the port
+            if (tcsetattr(result, TCSANOW, &port_settings) < 0 ) {
+                perror("Error opening Serial port: could not set serial port attributes");
+            }
+
 		    sleep(1); // wait a bit
         }
 return result;
@@ -117,10 +115,6 @@ char buffer[INPUT_BUFFER_SIZE]; // Data read from the ESUSMS device
 	
 		while (1) {
 	
-			/*struct timeval timeout; // timeout waiting for incoming data
-			timeout.tv_sec = TIMEOUT; 	// 10 second timeout
-			timeout.tv_usec = 0;*/
-	
 			fd_set rdfs;		// The file descriptor to wait on
 			FD_ZERO( &rdfs );
 			FD_SET( device, &rdfs ); // set to the esusms fd
@@ -148,25 +142,7 @@ char buffer[INPUT_BUFFER_SIZE]; // Data read from the ESUSMS device
 					break;
 				}
 				else { // There are n incoming bytes in buffer
-	
-					//char c;
-					//int size;
 					for (i = 0; i<n; i++) {
-                        /*if (buffer[i] == 0x12) {
-                            
-LinuxSerial_send_serial_serial_rx(_instance, 0x7D);
-
-                        }
-                        else if (buffer[i] == 0x13) {
-                            
-LinuxSerial_send_serial_serial_rx(_instance, 0x7D);
-
-                        }
-                        else if (buffer[i] == 0x7D) {
-                            
-LinuxSerial_send_serial_serial_rx(_instance, 0x7D);
-
-                        }*/
 						
 LinuxSerial_send_serial_serial_rx(_instance, buffer[i]);
 

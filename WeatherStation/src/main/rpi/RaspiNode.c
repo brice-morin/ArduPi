@@ -14,13 +14,13 @@
 #include <pthread.h>
 #include "thingml_typedefs.h"
 #include "runtime.h"
-#include "LinuxClock.h"
+#include "ClockTimer.h"
 #include "MessageDeserializer.h"
+#include "MessageSerializer.h"
+#include "WeatherStation.h"
 #include "SerialProxy.h"
 #include "LinuxSerial.h"
-#include "MessageSerializer.h"
-#include "ClockTimer.h"
-#include "WeatherStation.h"
+#include "LinuxClock.h"
 
 
 
@@ -29,16 +29,16 @@
  *****************************************************************************/
 
 //Declaration of instance variables
-struct LinuxClock_Instance RaspiNode_c_var;
+struct ClockTimer_Instance RaspiNode_t_var;
 struct MessageDeserializer_Instance RaspiNode_deserializer_var;
+struct MessageSerializer_Instance RaspiNode_serializer_var;
+struct WeatherStation_Instance RaspiNode_app_var;
 struct SerialProxy_Instance RaspiNode_proxy_var;
 struct LinuxSerial_Instance RaspiNode_serial_var;
-struct MessageSerializer_Instance RaspiNode_serializer_var;
-struct ClockTimer_Instance RaspiNode_t_var;
-struct WeatherStation_Instance RaspiNode_app_var;
+struct LinuxClock_Instance RaspiNode_c_var;
 
-// Enqueue of messages LinuxClock::signal::clock_tick
-void enqueue_LinuxClock_send_signal_clock_tick(struct LinuxClock_Instance *_instance){
+// Enqueue of messages ClockTimer::timer::timer_timeout
+void enqueue_ClockTimer_send_timer_timer_timeout(struct ClockTimer_Instance *_instance){
 fifo_lock();
 if ( fifo_byte_available() > 4 ) {
 
@@ -87,13 +87,76 @@ _fifo_enqueue(temp & 0xFF);
 }
 fifo_unlock_and_notify();
 }
+// Enqueue of messages MessageSerializer::serial::serial_tx
+void enqueue_MessageSerializer_send_serial_serial_tx(struct MessageSerializer_Instance *_instance, uint8_t b){
+fifo_lock();
+if ( fifo_byte_available() > 5 ) {
+
+_fifo_enqueue( (4 >> 8) & 0xFF );
+_fifo_enqueue( 4 & 0xFF );
+
+// ID of the source instance
+_fifo_enqueue( (_instance->id >> 8) & 0xFF );
+_fifo_enqueue( _instance->id & 0xFF );
+
+// parameter b
+_fifo_enqueue(b & 0xFF);
+}
+fifo_unlock_and_notify();
+}
+// Enqueue of messages WeatherStation::RemoteControlOut::changeDisplay
+void enqueue_WeatherStation_send_RemoteControlOut_changeDisplay(struct WeatherStation_Instance *_instance){
+fifo_lock();
+if ( fifo_byte_available() > 4 ) {
+
+_fifo_enqueue( (5 >> 8) & 0xFF );
+_fifo_enqueue( 5 & 0xFF );
+
+// ID of the source instance
+_fifo_enqueue( (_instance->id >> 8) & 0xFF );
+_fifo_enqueue( _instance->id & 0xFF );
+}
+fifo_unlock_and_notify();
+}
+// Enqueue of messages WeatherStation::timer::timer_start
+void enqueue_WeatherStation_send_timer_timer_start(struct WeatherStation_Instance *_instance, int delay){
+fifo_lock();
+if ( fifo_byte_available() > 6 ) {
+
+_fifo_enqueue( (6 >> 8) & 0xFF );
+_fifo_enqueue( 6 & 0xFF );
+
+// ID of the source instance
+_fifo_enqueue( (_instance->id >> 8) & 0xFF );
+_fifo_enqueue( _instance->id & 0xFF );
+
+// parameter delay
+_fifo_enqueue((delay>>8) & 0xFF);
+_fifo_enqueue(delay & 0xFF);
+}
+fifo_unlock_and_notify();
+}
+// Enqueue of messages WeatherStation::timer::timer_cancel
+void enqueue_WeatherStation_send_timer_timer_cancel(struct WeatherStation_Instance *_instance){
+fifo_lock();
+if ( fifo_byte_available() > 4 ) {
+
+_fifo_enqueue( (7 >> 8) & 0xFF );
+_fifo_enqueue( 7 & 0xFF );
+
+// ID of the source instance
+_fifo_enqueue( (_instance->id >> 8) & 0xFF );
+_fifo_enqueue( _instance->id & 0xFF );
+}
+fifo_unlock_and_notify();
+}
 // Enqueue of messages SerialProxy::Start::start
 void enqueue_SerialProxy_send_Start_start(struct SerialProxy_Instance *_instance){
 fifo_lock();
 if ( fifo_byte_available() > 4 ) {
 
-_fifo_enqueue( (4 >> 8) & 0xFF );
-_fifo_enqueue( 4 & 0xFF );
+_fifo_enqueue( (8 >> 8) & 0xFF );
+_fifo_enqueue( 8 & 0xFF );
 
 // ID of the source instance
 _fifo_enqueue( (_instance->id >> 8) & 0xFF );
@@ -106,8 +169,8 @@ void enqueue_SerialProxy_send_serial_serial_tx(struct SerialProxy_Instance *_ins
 fifo_lock();
 if ( fifo_byte_available() > 5 ) {
 
-_fifo_enqueue( (5 >> 8) & 0xFF );
-_fifo_enqueue( 5 & 0xFF );
+_fifo_enqueue( (9 >> 8) & 0xFF );
+_fifo_enqueue( 9 & 0xFF );
 
 // ID of the source instance
 _fifo_enqueue( (_instance->id >> 8) & 0xFF );
@@ -123,8 +186,8 @@ void enqueue_SerialProxy_send_serial_serial_open(struct SerialProxy_Instance *_i
 fifo_lock();
 if ( fifo_byte_available() > 14 ) {
 
-_fifo_enqueue( (6 >> 8) & 0xFF );
-_fifo_enqueue( 6 & 0xFF );
+_fifo_enqueue( (10 >> 8) & 0xFF );
+_fifo_enqueue( 10 & 0xFF );
 
 // ID of the source instance
 _fifo_enqueue( (_instance->id >> 8) & 0xFF );
@@ -153,8 +216,8 @@ void enqueue_SerialProxy_send_deserializer_serial_rx(struct SerialProxy_Instance
 fifo_lock();
 if ( fifo_byte_available() > 5 ) {
 
-_fifo_enqueue( (7 >> 8) & 0xFF );
-_fifo_enqueue( 7 & 0xFF );
+_fifo_enqueue( (11 >> 8) & 0xFF );
+_fifo_enqueue( 11 & 0xFF );
 
 // ID of the source instance
 _fifo_enqueue( (_instance->id >> 8) & 0xFF );
@@ -170,8 +233,8 @@ void enqueue_LinuxSerial_send_serial_serial_opened(struct LinuxSerial_Instance *
 fifo_lock();
 if ( fifo_byte_available() > 4 ) {
 
-_fifo_enqueue( (8 >> 8) & 0xFF );
-_fifo_enqueue( 8 & 0xFF );
+_fifo_enqueue( (12 >> 8) & 0xFF );
+_fifo_enqueue( 12 & 0xFF );
 
 // ID of the source instance
 _fifo_enqueue( (_instance->id >> 8) & 0xFF );
@@ -184,81 +247,22 @@ void enqueue_LinuxSerial_send_serial_serial_rx(struct LinuxSerial_Instance *_ins
 fifo_lock();
 if ( fifo_byte_available() > 5 ) {
 
-_fifo_enqueue( (9 >> 8) & 0xFF );
-_fifo_enqueue( 9 & 0xFF );
-
-// ID of the source instance
-_fifo_enqueue( (_instance->id >> 8) & 0xFF );
-_fifo_enqueue( _instance->id & 0xFF );
-
-// parameter b
-_fifo_enqueue(b & 0xFF);
-}
-fifo_unlock_and_notify();
-}
-// Enqueue of messages MessageSerializer::serial::serial_tx
-void enqueue_MessageSerializer_send_serial_serial_tx(struct MessageSerializer_Instance *_instance, uint8_t b){
-fifo_lock();
-if ( fifo_byte_available() > 5 ) {
-
-_fifo_enqueue( (10 >> 8) & 0xFF );
-_fifo_enqueue( 10 & 0xFF );
-
-// ID of the source instance
-_fifo_enqueue( (_instance->id >> 8) & 0xFF );
-_fifo_enqueue( _instance->id & 0xFF );
-
-// parameter b
-_fifo_enqueue(b & 0xFF);
-}
-fifo_unlock_and_notify();
-}
-// Enqueue of messages ClockTimer::timer::timer_timeout
-void enqueue_ClockTimer_send_timer_timer_timeout(struct ClockTimer_Instance *_instance){
-fifo_lock();
-if ( fifo_byte_available() > 4 ) {
-
-_fifo_enqueue( (11 >> 8) & 0xFF );
-_fifo_enqueue( 11 & 0xFF );
-
-// ID of the source instance
-_fifo_enqueue( (_instance->id >> 8) & 0xFF );
-_fifo_enqueue( _instance->id & 0xFF );
-}
-fifo_unlock_and_notify();
-}
-// Enqueue of messages WeatherStation::RemoteControlOut::changeDisplay
-void enqueue_WeatherStation_send_RemoteControlOut_changeDisplay(struct WeatherStation_Instance *_instance){
-fifo_lock();
-if ( fifo_byte_available() > 4 ) {
-
-_fifo_enqueue( (12 >> 8) & 0xFF );
-_fifo_enqueue( 12 & 0xFF );
-
-// ID of the source instance
-_fifo_enqueue( (_instance->id >> 8) & 0xFF );
-_fifo_enqueue( _instance->id & 0xFF );
-}
-fifo_unlock_and_notify();
-}
-// Enqueue of messages WeatherStation::timer::timer_cancel
-void enqueue_WeatherStation_send_timer_timer_cancel(struct WeatherStation_Instance *_instance){
-fifo_lock();
-if ( fifo_byte_available() > 4 ) {
-
 _fifo_enqueue( (13 >> 8) & 0xFF );
 _fifo_enqueue( 13 & 0xFF );
 
 // ID of the source instance
 _fifo_enqueue( (_instance->id >> 8) & 0xFF );
 _fifo_enqueue( _instance->id & 0xFF );
+
+// parameter b
+_fifo_enqueue(b & 0xFF);
 }
 fifo_unlock_and_notify();
 }
-// Enqueue of messages WeatherStation::timer::timer_start
-void enqueue_WeatherStation_send_timer_timer_start(struct WeatherStation_Instance *_instance, int delay){
+// Enqueue of messages LinuxClock::signal::clock_tick
+void enqueue_LinuxClock_send_signal_clock_tick(struct LinuxClock_Instance *_instance){
 fifo_lock();
-if ( fifo_byte_available() > 6 ) {
+if ( fifo_byte_available() > 4 ) {
 
 _fifo_enqueue( (14 >> 8) & 0xFF );
 _fifo_enqueue( 14 & 0xFF );
@@ -266,18 +270,14 @@ _fifo_enqueue( 14 & 0xFF );
 // ID of the source instance
 _fifo_enqueue( (_instance->id >> 8) & 0xFF );
 _fifo_enqueue( _instance->id & 0xFF );
-
-// parameter delay
-_fifo_enqueue((delay>>8) & 0xFF);
-_fifo_enqueue(delay & 0xFF);
 }
 fifo_unlock_and_notify();
 }
 
-// Dispatch for messages LinuxClock::signal::clock_tick
-void dispatch_LinuxClock_send_signal_clock_tick(struct LinuxClock_Instance *_instance){
-if (_instance == &RaspiNode_c_var) {
-ClockTimer_handle_clock_clock_tick(&RaspiNode_t_var);
+// Dispatch for messages ClockTimer::timer::timer_timeout
+void dispatch_ClockTimer_send_timer_timer_timeout(struct ClockTimer_Instance *_instance){
+if (_instance == &RaspiNode_t_var) {
+WeatherStation_handle_timer_timer_timeout(&RaspiNode_app_var);
 }
 }
 // Dispatch for messages MessageDeserializer::RemoteControl::light
@@ -290,6 +290,30 @@ WeatherStation_handle_RemoteControlIn_light(&RaspiNode_app_var, light);
 void dispatch_MessageDeserializer_send_RemoteControl_temperature(struct MessageDeserializer_Instance *_instance, uint16_t temp){
 if (_instance == &RaspiNode_deserializer_var) {
 WeatherStation_handle_RemoteControlIn_temperature(&RaspiNode_app_var, temp);
+}
+}
+// Dispatch for messages MessageSerializer::serial::serial_tx
+void dispatch_MessageSerializer_send_serial_serial_tx(struct MessageSerializer_Instance *_instance, uint8_t b){
+if (_instance == &RaspiNode_serializer_var) {
+SerialProxy_handle_serializer_serial_tx(&RaspiNode_proxy_var, b);
+}
+}
+// Dispatch for messages WeatherStation::RemoteControlOut::changeDisplay
+void dispatch_WeatherStation_send_RemoteControlOut_changeDisplay(struct WeatherStation_Instance *_instance){
+if (_instance == &RaspiNode_app_var) {
+MessageSerializer_handle_RemoteControl_changeDisplay(&RaspiNode_serializer_var);
+}
+}
+// Dispatch for messages WeatherStation::timer::timer_start
+void dispatch_WeatherStation_send_timer_timer_start(struct WeatherStation_Instance *_instance, int delay){
+if (_instance == &RaspiNode_app_var) {
+ClockTimer_handle_timer_timer_start(&RaspiNode_t_var, delay);
+}
+}
+// Dispatch for messages WeatherStation::timer::timer_cancel
+void dispatch_WeatherStation_send_timer_timer_cancel(struct WeatherStation_Instance *_instance){
+if (_instance == &RaspiNode_app_var) {
+ClockTimer_handle_timer_timer_cancel(&RaspiNode_t_var);
 }
 }
 // Dispatch for messages SerialProxy::Start::start
@@ -328,34 +352,10 @@ if (_instance == &RaspiNode_serial_var) {
 SerialProxy_handle_serial_serial_rx(&RaspiNode_proxy_var, b);
 }
 }
-// Dispatch for messages MessageSerializer::serial::serial_tx
-void dispatch_MessageSerializer_send_serial_serial_tx(struct MessageSerializer_Instance *_instance, uint8_t b){
-if (_instance == &RaspiNode_serializer_var) {
-SerialProxy_handle_serializer_serial_tx(&RaspiNode_proxy_var, b);
-}
-}
-// Dispatch for messages ClockTimer::timer::timer_timeout
-void dispatch_ClockTimer_send_timer_timer_timeout(struct ClockTimer_Instance *_instance){
-if (_instance == &RaspiNode_t_var) {
-WeatherStation_handle_timer_timer_timeout(&RaspiNode_app_var);
-}
-}
-// Dispatch for messages WeatherStation::RemoteControlOut::changeDisplay
-void dispatch_WeatherStation_send_RemoteControlOut_changeDisplay(struct WeatherStation_Instance *_instance){
-if (_instance == &RaspiNode_app_var) {
-MessageSerializer_handle_RemoteControl_changeDisplay(&RaspiNode_serializer_var);
-}
-}
-// Dispatch for messages WeatherStation::timer::timer_cancel
-void dispatch_WeatherStation_send_timer_timer_cancel(struct WeatherStation_Instance *_instance){
-if (_instance == &RaspiNode_app_var) {
-ClockTimer_handle_timer_timer_cancel(&RaspiNode_t_var);
-}
-}
-// Dispatch for messages WeatherStation::timer::timer_start
-void dispatch_WeatherStation_send_timer_timer_start(struct WeatherStation_Instance *_instance, int delay){
-if (_instance == &RaspiNode_app_var) {
-ClockTimer_handle_timer_timer_start(&RaspiNode_t_var, delay);
+// Dispatch for messages LinuxClock::signal::clock_tick
+void dispatch_LinuxClock_send_signal_clock_tick(struct LinuxClock_Instance *_instance){
+if (_instance == &RaspiNode_c_var) {
+ClockTimer_handle_clock_clock_tick(&RaspiNode_t_var);
 }
 }
 
@@ -375,7 +375,7 @@ switch(code) {
 case 1:
 while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
 fifo_unlock();
-dispatch_LinuxClock_send_signal_clock_tick((struct LinuxClock_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */);
+dispatch_ClockTimer_send_timer_timer_timeout((struct ClockTimer_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */);
 break;
 case 2:
 while (mbufi < 4) mbuf[mbufi++] = fifo_dequeue();
@@ -390,91 +390,91 @@ dispatch_MessageDeserializer_send_RemoteControl_temperature((struct MessageDeser
 (mbuf[2]<<8) + mbuf[3] /* temp */ );
 break;
 case 4:
+while (mbufi < 3) mbuf[mbufi++] = fifo_dequeue();
+fifo_unlock();
+dispatch_MessageSerializer_send_serial_serial_tx((struct MessageSerializer_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */,
+mbuf[2] /* b */ );
+break;
+case 5:
+while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
+fifo_unlock();
+dispatch_WeatherStation_send_RemoteControlOut_changeDisplay((struct WeatherStation_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */);
+break;
+case 6:
+while (mbufi < 4) mbuf[mbufi++] = fifo_dequeue();
+fifo_unlock();
+dispatch_WeatherStation_send_timer_timer_start((struct WeatherStation_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */,
+(mbuf[2]<<8) + mbuf[3] /* delay */ );
+break;
+case 7:
+while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
+fifo_unlock();
+dispatch_WeatherStation_send_timer_timer_cancel((struct WeatherStation_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */);
+break;
+case 8:
 while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
 fifo_unlock();
 dispatch_SerialProxy_send_Start_start((struct SerialProxy_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */);
 break;
-case 5:
+case 9:
 while (mbufi < 3) mbuf[mbufi++] = fifo_dequeue();
 fifo_unlock();
 dispatch_SerialProxy_send_serial_serial_tx((struct SerialProxy_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */,
 mbuf[2] /* b */ );
 break;
-case 6:
+case 10:
 while (mbufi < 12) mbuf[mbufi++] = fifo_dequeue();
 fifo_unlock();
 dispatch_SerialProxy_send_serial_serial_open((struct SerialProxy_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */,
 (char *)((ptr_union_t*)(mbuf + 2))->pointer /* device */ ,
 (mbuf[10]<<8) + mbuf[11] /* baudrate */ );
 break;
-case 7:
+case 11:
 while (mbufi < 3) mbuf[mbufi++] = fifo_dequeue();
 fifo_unlock();
 dispatch_SerialProxy_send_deserializer_serial_rx((struct SerialProxy_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */,
 mbuf[2] /* b */ );
 break;
-case 8:
+case 12:
 while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
 fifo_unlock();
 dispatch_LinuxSerial_send_serial_serial_opened((struct LinuxSerial_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */);
 break;
-case 9:
+case 13:
 while (mbufi < 3) mbuf[mbufi++] = fifo_dequeue();
 fifo_unlock();
 dispatch_LinuxSerial_send_serial_serial_rx((struct LinuxSerial_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */,
 mbuf[2] /* b */ );
 break;
-case 10:
-while (mbufi < 3) mbuf[mbufi++] = fifo_dequeue();
-fifo_unlock();
-dispatch_MessageSerializer_send_serial_serial_tx((struct MessageSerializer_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */,
-mbuf[2] /* b */ );
-break;
-case 11:
-while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
-fifo_unlock();
-dispatch_ClockTimer_send_timer_timer_timeout((struct ClockTimer_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */);
-break;
-case 12:
-while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
-fifo_unlock();
-dispatch_WeatherStation_send_RemoteControlOut_changeDisplay((struct WeatherStation_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */);
-break;
-case 13:
-while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
-fifo_unlock();
-dispatch_WeatherStation_send_timer_timer_cancel((struct WeatherStation_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */);
-break;
 case 14:
-while (mbufi < 4) mbuf[mbufi++] = fifo_dequeue();
+while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
 fifo_unlock();
-dispatch_WeatherStation_send_timer_timer_start((struct WeatherStation_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */,
-(mbuf[2]<<8) + mbuf[3] /* delay */ );
+dispatch_LinuxClock_send_signal_clock_tick((struct LinuxClock_Instance*)instance_by_id((mbuf[0] << 8) + mbuf[1]) /* instance */);
 break;
 }
 }
 
 void initialize_configuration_RaspiNode() {
 // Initialize connectors
-register_LinuxClock_send_signal_clock_tick_listener(enqueue_LinuxClock_send_signal_clock_tick);
+register_ClockTimer_send_timer_timer_timeout_listener(enqueue_ClockTimer_send_timer_timer_timeout);
 register_MessageDeserializer_send_RemoteControl_temperature_listener(enqueue_MessageDeserializer_send_RemoteControl_temperature);
 register_MessageDeserializer_send_RemoteControl_light_listener(enqueue_MessageDeserializer_send_RemoteControl_light);
+register_MessageSerializer_send_serial_serial_tx_listener(enqueue_MessageSerializer_send_serial_serial_tx);
+register_WeatherStation_send_RemoteControlOut_changeDisplay_listener(enqueue_WeatherStation_send_RemoteControlOut_changeDisplay);
+register_WeatherStation_send_timer_timer_start_listener(enqueue_WeatherStation_send_timer_timer_start);
+register_WeatherStation_send_timer_timer_cancel_listener(enqueue_WeatherStation_send_timer_timer_cancel);
 register_SerialProxy_send_Start_start_listener(enqueue_SerialProxy_send_Start_start);
 register_SerialProxy_send_serial_serial_open_listener(enqueue_SerialProxy_send_serial_serial_open);
 register_SerialProxy_send_serial_serial_tx_listener(enqueue_SerialProxy_send_serial_serial_tx);
 register_SerialProxy_send_deserializer_serial_rx_listener(enqueue_SerialProxy_send_deserializer_serial_rx);
 register_LinuxSerial_send_serial_serial_rx_listener(enqueue_LinuxSerial_send_serial_serial_rx);
 register_LinuxSerial_send_serial_serial_opened_listener(enqueue_LinuxSerial_send_serial_serial_opened);
-register_MessageSerializer_send_serial_serial_tx_listener(enqueue_MessageSerializer_send_serial_serial_tx);
-register_ClockTimer_send_timer_timer_timeout_listener(enqueue_ClockTimer_send_timer_timer_timeout);
-register_WeatherStation_send_RemoteControlOut_changeDisplay_listener(enqueue_WeatherStation_send_RemoteControlOut_changeDisplay);
-register_WeatherStation_send_timer_timer_start_listener(enqueue_WeatherStation_send_timer_timer_start);
-register_WeatherStation_send_timer_timer_cancel_listener(enqueue_WeatherStation_send_timer_timer_cancel);
+register_LinuxClock_send_signal_clock_tick_listener(enqueue_LinuxClock_send_signal_clock_tick);
 
-// Init the ID, state variables and properties for instance RaspiNode_c
-RaspiNode_c_var.id = add_instance( (void*) &RaspiNode_c_var);
-RaspiNode_c_var.LinuxClock_ClockImpl_State = LINUXCLOCK_CLOCKIMPL_TICKING_STATE;
-RaspiNode_c_var.Clock_period_var = 1000;
+// Init the ID, state variables and properties for instance RaspiNode_t
+RaspiNode_t_var.id = add_instance( (void*) &RaspiNode_t_var);
+RaspiNode_t_var.ClockTimer_ClockTimerImpl_State = CLOCKTIMER_CLOCKTIMERIMPL_IDLE_STATE;
+RaspiNode_t_var.ClockTimer_ClockTimerImpl_remaining_var = 0;
 
 // Init the ID, state variables and properties for instance RaspiNode_deserializer
 RaspiNode_deserializer_var.id = add_instance( (void*) &RaspiNode_deserializer_var);
@@ -483,13 +483,32 @@ RaspiNode_deserializer_var.PacketManager_lengthInteger_var = 2;
 RaspiNode_deserializer_var.PacketManager_lengthString_var = 8;
 RaspiNode_deserializer_var.PacketManager_lengthUInt16_var = 2;
 RaspiNode_deserializer_var.PacketManager_MAX_PACKET_SIZE_var = 16;
-RaspiNode_deserializer_var.PacketManager_START_BYTE_var = 0x12;
-RaspiNode_deserializer_var.PacketManager_STOP_BYTE_var = 0x13;
+RaspiNode_deserializer_var.PacketManager_START_BYTE_var = 0x7F;
+RaspiNode_deserializer_var.PacketManager_STOP_BYTE_var = 0x7E;
 RaspiNode_deserializer_var.PacketManager_ESCAPE_BYTE_var = 0x7D;
 RaspiNode_deserializer_var.PacketManager_CODE_POSITION_var = 3;
 RaspiNode_deserializer_var.PacketManager_LENGTH_POSITION_var = 4;
 RaspiNode_deserializer_var.PacketManager_DATA_POSITION_var = 5;
 RaspiNode_deserializer_var.PacketManager_index_var = 0;
+
+// Init the ID, state variables and properties for instance RaspiNode_serializer
+RaspiNode_serializer_var.id = add_instance( (void*) &RaspiNode_serializer_var);
+RaspiNode_serializer_var.MessageSerializer_SerializerBehavior_State = MESSAGESERIALIZER_SERIALIZERBEHAVIOR_SERIALIZE_STATE;
+RaspiNode_serializer_var.PacketManager_lengthInteger_var = 2;
+RaspiNode_serializer_var.PacketManager_lengthString_var = 8;
+RaspiNode_serializer_var.PacketManager_lengthUInt16_var = 2;
+RaspiNode_serializer_var.PacketManager_MAX_PACKET_SIZE_var = 16;
+RaspiNode_serializer_var.PacketManager_START_BYTE_var = 0x7F;
+RaspiNode_serializer_var.PacketManager_STOP_BYTE_var = 0x7E;
+RaspiNode_serializer_var.PacketManager_ESCAPE_BYTE_var = 0x7D;
+RaspiNode_serializer_var.PacketManager_CODE_POSITION_var = 3;
+RaspiNode_serializer_var.PacketManager_LENGTH_POSITION_var = 4;
+RaspiNode_serializer_var.PacketManager_DATA_POSITION_var = 5;
+RaspiNode_serializer_var.PacketManager_index_var = 0;
+
+// Init the ID, state variables and properties for instance RaspiNode_app
+RaspiNode_app_var.id = add_instance( (void*) &RaspiNode_app_var);
+RaspiNode_app_var.WeatherStation_SensorsDisplayImpl_State = WEATHERSTATION_SENSORSDISPLAYIMPL_INIT_STATE;
 
 // Init the ID, state variables and properties for instance RaspiNode_proxy
 RaspiNode_proxy_var.id = add_instance( (void*) &RaspiNode_proxy_var);
@@ -499,37 +518,18 @@ RaspiNode_proxy_var.SerialProxy_SensorsDisplayImpl_State = SERIALPROXY_SENSORSDI
 RaspiNode_serial_var.id = add_instance( (void*) &RaspiNode_serial_var);
 RaspiNode_serial_var.LinuxSerial_LinuxSerialImpl_State = LINUXSERIAL_LINUXSERIALIMPL_RUNNING_STATE;
 
-// Init the ID, state variables and properties for instance RaspiNode_serializer
-RaspiNode_serializer_var.id = add_instance( (void*) &RaspiNode_serializer_var);
-RaspiNode_serializer_var.MessageSerializer_SerializerBehavior_State = MESSAGESERIALIZER_SERIALIZERBEHAVIOR_SERIALIZE_STATE;
-RaspiNode_serializer_var.PacketManager_lengthInteger_var = 2;
-RaspiNode_serializer_var.PacketManager_lengthString_var = 8;
-RaspiNode_serializer_var.PacketManager_lengthUInt16_var = 2;
-RaspiNode_serializer_var.PacketManager_MAX_PACKET_SIZE_var = 16;
-RaspiNode_serializer_var.PacketManager_START_BYTE_var = 0x12;
-RaspiNode_serializer_var.PacketManager_STOP_BYTE_var = 0x13;
-RaspiNode_serializer_var.PacketManager_ESCAPE_BYTE_var = 0x7D;
-RaspiNode_serializer_var.PacketManager_CODE_POSITION_var = 3;
-RaspiNode_serializer_var.PacketManager_LENGTH_POSITION_var = 4;
-RaspiNode_serializer_var.PacketManager_DATA_POSITION_var = 5;
-RaspiNode_serializer_var.PacketManager_index_var = 0;
+// Init the ID, state variables and properties for instance RaspiNode_c
+RaspiNode_c_var.id = add_instance( (void*) &RaspiNode_c_var);
+RaspiNode_c_var.LinuxClock_ClockImpl_State = LINUXCLOCK_CLOCKIMPL_TICKING_STATE;
+RaspiNode_c_var.Clock_period_var = 1000;
 
-// Init the ID, state variables and properties for instance RaspiNode_t
-RaspiNode_t_var.id = add_instance( (void*) &RaspiNode_t_var);
-RaspiNode_t_var.ClockTimer_ClockTimerImpl_State = CLOCKTIMER_CLOCKTIMERIMPL_IDLE_STATE;
-RaspiNode_t_var.ClockTimer_ClockTimerImpl_remaining_var = 0;
-
-// Init the ID, state variables and properties for instance RaspiNode_app
-RaspiNode_app_var.id = add_instance( (void*) &RaspiNode_app_var);
-RaspiNode_app_var.WeatherStation_SensorsDisplayImpl_State = WEATHERSTATION_SENSORSDISPLAYIMPL_INIT_STATE;
-
-LinuxClock_ClockImpl_OnEntry(LINUXCLOCK_CLOCKIMPL_STATE, &RaspiNode_c_var);
+ClockTimer_ClockTimerImpl_OnEntry(CLOCKTIMER_CLOCKTIMERIMPL_STATE, &RaspiNode_t_var);
 MessageDeserializer_receive_OnEntry(MESSAGEDESERIALIZER_RECEIVE_STATE, &RaspiNode_deserializer_var);
+MessageSerializer_SerializerBehavior_OnEntry(MESSAGESERIALIZER_SERIALIZERBEHAVIOR_STATE, &RaspiNode_serializer_var);
+WeatherStation_SensorsDisplayImpl_OnEntry(WEATHERSTATION_SENSORSDISPLAYIMPL_STATE, &RaspiNode_app_var);
 SerialProxy_SensorsDisplayImpl_OnEntry(SERIALPROXY_SENSORSDISPLAYIMPL_STATE, &RaspiNode_proxy_var);
 LinuxSerial_LinuxSerialImpl_OnEntry(LINUXSERIAL_LINUXSERIALIMPL_STATE, &RaspiNode_serial_var);
-MessageSerializer_SerializerBehavior_OnEntry(MESSAGESERIALIZER_SERIALIZERBEHAVIOR_STATE, &RaspiNode_serializer_var);
-ClockTimer_ClockTimerImpl_OnEntry(CLOCKTIMER_CLOCKTIMERIMPL_STATE, &RaspiNode_t_var);
-WeatherStation_SensorsDisplayImpl_OnEntry(WEATHERSTATION_SENSORSDISPLAYIMPL_STATE, &RaspiNode_app_var);
+LinuxClock_ClockImpl_OnEntry(LINUXCLOCK_CLOCKIMPL_STATE, &RaspiNode_c_var);
 }
 
 

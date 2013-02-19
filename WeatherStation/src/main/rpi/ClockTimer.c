@@ -52,19 +52,6 @@ default: break;
 }
 
 // Event Handlers for incomming messages:
-void ClockTimer_handle_clock_clock_tick(struct ClockTimer_Instance *_instance) {
-if (_instance->ClockTimer_ClockTimerImpl_State == CLOCKTIMER_CLOCKTIMERIMPL_COUNTING_STATE) {
-if (_instance->ClockTimer_ClockTimerImpl_remaining_var == 0) {
-ClockTimer_ClockTimerImpl_OnExit(CLOCKTIMER_CLOCKTIMERIMPL_COUNTING_STATE, _instance);
-_instance->ClockTimer_ClockTimerImpl_State = CLOCKTIMER_CLOCKTIMERIMPL_IDLE_STATE;
-ClockTimer_send_timer_timer_timeout(_instance);
-ClockTimer_ClockTimerImpl_OnEntry(CLOCKTIMER_CLOCKTIMERIMPL_IDLE_STATE, _instance);
-}
-else if (_instance->ClockTimer_ClockTimerImpl_remaining_var > 0) {
-_instance->ClockTimer_ClockTimerImpl_remaining_var = _instance->ClockTimer_ClockTimerImpl_remaining_var - 1;
-}
-}
-}
 void ClockTimer_handle_timer_timer_start(struct ClockTimer_Instance *_instance, int delay) {
 if (_instance->ClockTimer_ClockTimerImpl_State == CLOCKTIMER_CLOCKTIMERIMPL_IDLE_STATE) {
 if (1) {
@@ -81,6 +68,19 @@ if (1) {
 ClockTimer_ClockTimerImpl_OnExit(CLOCKTIMER_CLOCKTIMERIMPL_COUNTING_STATE, _instance);
 _instance->ClockTimer_ClockTimerImpl_State = CLOCKTIMER_CLOCKTIMERIMPL_IDLE_STATE;
 ClockTimer_ClockTimerImpl_OnEntry(CLOCKTIMER_CLOCKTIMERIMPL_IDLE_STATE, _instance);
+}
+}
+}
+void ClockTimer_handle_clock_clock_tick(struct ClockTimer_Instance *_instance) {
+if (_instance->ClockTimer_ClockTimerImpl_State == CLOCKTIMER_CLOCKTIMERIMPL_COUNTING_STATE) {
+if (_instance->ClockTimer_ClockTimerImpl_remaining_var == 0) {
+ClockTimer_ClockTimerImpl_OnExit(CLOCKTIMER_CLOCKTIMERIMPL_COUNTING_STATE, _instance);
+_instance->ClockTimer_ClockTimerImpl_State = CLOCKTIMER_CLOCKTIMERIMPL_IDLE_STATE;
+ClockTimer_send_timer_timer_timeout(_instance);
+ClockTimer_ClockTimerImpl_OnEntry(CLOCKTIMER_CLOCKTIMERIMPL_IDLE_STATE, _instance);
+}
+else if (_instance->ClockTimer_ClockTimerImpl_remaining_var > 0) {
+_instance->ClockTimer_ClockTimerImpl_remaining_var = _instance->ClockTimer_ClockTimerImpl_remaining_var - 1;
 }
 }
 }

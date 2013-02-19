@@ -28,10 +28,10 @@ int WeatherStation_SensorsDisplayImpl_State;
 
 // Declaration of prototypes outgoing messages:
 void WeatherStation_SensorsDisplayImpl_OnEntry(int state, struct WeatherStation_Instance *_instance);
-void WeatherStation_handle_RemoteControlIn_temperature(struct WeatherStation_Instance *_instance, uint16_t temp);
-void WeatherStation_handle_RemoteControlIn_light(struct WeatherStation_Instance *_instance, uint16_t light);
 void WeatherStation_handle_timer_timer_timeout(struct WeatherStation_Instance *_instance);
 void WeatherStation_handle_Start_start(struct WeatherStation_Instance *_instance);
+void WeatherStation_handle_RemoteControlIn_light(struct WeatherStation_Instance *_instance, uint16_t light);
+void WeatherStation_handle_RemoteControlIn_temperature(struct WeatherStation_Instance *_instance, uint16_t temp);
 // Declaration of callbacks for incomming messages:
 void register_WeatherStation_send_RemoteControlOut_changeDisplay_listener(void (*_listener)(struct WeatherStation_Instance*));
 void register_WeatherStation_send_timer_timer_start_listener(void (*_listener)(struct WeatherStation_Instance*, int));

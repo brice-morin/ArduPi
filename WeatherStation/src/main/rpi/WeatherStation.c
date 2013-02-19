@@ -65,32 +65,6 @@ default: break;
 }
 
 // Event Handlers for incomming messages:
-void WeatherStation_handle_RemoteControlIn_temperature(struct WeatherStation_Instance *_instance, uint16_t temp) {
-if (_instance->WeatherStation_SensorsDisplayImpl_State == WEATHERSTATION_SENSORSDISPLAYIMPL_PROCESS_STATE) {
-if (1) {
-{
-fprintf(stdout, ("Temperature is: "));
-
-printf("%u", temp);
-fprintf(stdout, ("\n"));
-
-}
-}
-}
-}
-void WeatherStation_handle_RemoteControlIn_light(struct WeatherStation_Instance *_instance, uint16_t light) {
-if (_instance->WeatherStation_SensorsDisplayImpl_State == WEATHERSTATION_SENSORSDISPLAYIMPL_PROCESS_STATE) {
-if (1) {
-{
-fprintf(stdout, ("Light is: "));
-
-printf("%u", light);
-fprintf(stdout, ("\n"));
-
-}
-}
-}
-}
 void WeatherStation_handle_timer_timer_timeout(struct WeatherStation_Instance *_instance) {
 if (_instance->WeatherStation_SensorsDisplayImpl_State == WEATHERSTATION_SENSORSDISPLAYIMPL_PROCESS_STATE) {
 if (1) {
@@ -111,6 +85,32 @@ if (1) {
 WeatherStation_SensorsDisplayImpl_OnExit(WEATHERSTATION_SENSORSDISPLAYIMPL_INIT_STATE, _instance);
 _instance->WeatherStation_SensorsDisplayImpl_State = WEATHERSTATION_SENSORSDISPLAYIMPL_PROCESS_STATE;
 WeatherStation_SensorsDisplayImpl_OnEntry(WEATHERSTATION_SENSORSDISPLAYIMPL_PROCESS_STATE, _instance);
+}
+}
+}
+void WeatherStation_handle_RemoteControlIn_light(struct WeatherStation_Instance *_instance, uint16_t light) {
+if (_instance->WeatherStation_SensorsDisplayImpl_State == WEATHERSTATION_SENSORSDISPLAYIMPL_PROCESS_STATE) {
+if (1) {
+{
+fprintf(stdout, ("Light is: "));
+
+printf("%u", light);
+fprintf(stdout, ("\n"));
+
+}
+}
+}
+}
+void WeatherStation_handle_RemoteControlIn_temperature(struct WeatherStation_Instance *_instance, uint16_t temp) {
+if (_instance->WeatherStation_SensorsDisplayImpl_State == WEATHERSTATION_SENSORSDISPLAYIMPL_PROCESS_STATE) {
+if (1) {
+{
+fprintf(stdout, ("Temperature is: "));
+
+printf("%u", temp);
+fprintf(stdout, ("\n"));
+
+}
 }
 }
 }

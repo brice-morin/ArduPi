@@ -58,12 +58,13 @@ default: break;
 }
 
 // Event Handlers for incomming messages:
-void SerialProxy_handle_serializer_serial_tx(struct SerialProxy_Instance *_instance, uint8_t b) {
-if (_instance->SerialProxy_SensorsDisplayImpl_State == SERIALPROXY_SENSORSDISPLAYIMPL_PROCESS_STATE) {
+void SerialProxy_handle_serial_serial_opened(struct SerialProxy_Instance *_instance) {
+if (_instance->SerialProxy_SensorsDisplayImpl_State == SERIALPROXY_SENSORSDISPLAYIMPL_INIT_STATE) {
 if (1) {
-{
-SerialProxy_send_serial_serial_tx(_instance, b);
-}
+SerialProxy_SensorsDisplayImpl_OnExit(SERIALPROXY_SENSORSDISPLAYIMPL_INIT_STATE, _instance);
+_instance->SerialProxy_SensorsDisplayImpl_State = SERIALPROXY_SENSORSDISPLAYIMPL_PROCESS_STATE;
+SerialProxy_send_Start_start(_instance);
+SerialProxy_SensorsDisplayImpl_OnEntry(SERIALPROXY_SENSORSDISPLAYIMPL_PROCESS_STATE, _instance);
 }
 }
 }
@@ -76,13 +77,12 @@ SerialProxy_send_deserializer_serial_rx(_instance, b);
 }
 }
 }
-void SerialProxy_handle_serial_serial_opened(struct SerialProxy_Instance *_instance) {
-if (_instance->SerialProxy_SensorsDisplayImpl_State == SERIALPROXY_SENSORSDISPLAYIMPL_INIT_STATE) {
+void SerialProxy_handle_serializer_serial_tx(struct SerialProxy_Instance *_instance, uint8_t b) {
+if (_instance->SerialProxy_SensorsDisplayImpl_State == SERIALPROXY_SENSORSDISPLAYIMPL_PROCESS_STATE) {
 if (1) {
-SerialProxy_SensorsDisplayImpl_OnExit(SERIALPROXY_SENSORSDISPLAYIMPL_INIT_STATE, _instance);
-_instance->SerialProxy_SensorsDisplayImpl_State = SERIALPROXY_SENSORSDISPLAYIMPL_PROCESS_STATE;
-SerialProxy_send_Start_start(_instance);
-SerialProxy_SensorsDisplayImpl_OnEntry(SERIALPROXY_SENSORSDISPLAYIMPL_PROCESS_STATE, _instance);
+{
+SerialProxy_send_serial_serial_tx(_instance, b);
+}
 }
 }
 }
