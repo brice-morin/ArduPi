@@ -1,7 +1,7 @@
 Weather Station Arduino - Raspberry Pi with MongoDB
 ===================================================
 
-This weather station is pretty much the same as the original one, which I recommend you to test beforehand. The code running on the Arduino now embeds a timer and sends (via USB) a value every 2 seconds. On the Raspberry Pi, one big difference though: the data received from the Arduino are now pushed into a local MongoDB database (accessible in REST from any web-browser on the same LAN as the Pi, or anywhere in the world if you Pi as a public IP), in addition of printing temperature and light values on the terminal.
+This weather station is pretty much the same as the original one, which I recommend you to test beforehand. On the Raspberry Pi, one big difference though: the data received from the Arduino are now pushed into a local MongoDB database (accessible in REST from any web-browser on the same LAN as the Pi, or anywhere in the world if you Pi as a public IP), in addition of printing temperature and light values on the terminal.
 
 How-to:
 -------
