@@ -1,44 +1,41 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include<curl/curl.h>
 
 
-void registerSensor(char* id, char* descr, char* backend, char* tpl);
-void getSensorDetails(char* url);
-void pushData(char* data);
-void getData(char* url, char* contentType);
+int registerSensor(char* id, char* descr, char* backend, char* tpl);
+int getSensorDetails(char* url);
+//int pushData(char* data);
+//int getData(char* url, char* contentType);
 
 char* server = "localhost";
-int port = 8080;
+char* port = "8080";
 
 int main() {
-  printf("Registering sensor... ");
-  /*char* sensorURL = */registerSensor("demo-curl/a-sensor", "example sensor", "raw", "Numerical");
-  /*printf(sensorURL);
-  printf("\n");
-  printf("\n");*/
+  printf("Registering sensor...\n");
+  printf(registerSensor("demo-curl/a-sensor", "example sensor", "raw", "Numerical"));
+  printf("\n\n");
   
-  printf("Pushing data... ");
+  printf("Pushing data...\n");
   char* data = "{\"bn\":\"demo-curl/a-sensor\", \"bu\":\"m\", \"e\":[{\"v\":10, \"t\": 0 }, {\"v\":12, \"t\": 1 }]}";
-  /*char* status = */pushData(data);
-  /*printf(status);
-  printf("\n");
-  printf("\n");*/
-  
-  /*printf("Retrieving data in JSON...\n");
+  printf(pushData(data));
+  printf("\n\n");
+
+  /*
+  printf("Retrieving data in JSON...\n");
   printf(getData("/sensapp/databases/raw/data/demo-curl/a-sensor", "application/json"));
   printf("\n");
   printf("\n");
   printf("Retrieving data in XML...\n");
-  printf(getData("/sensapp/databases/raw/data/demo-curl/a-sensor", "text/xml"));*/
+  printf(getData("/sensapp/databases/raw/data/demo-curl/a-sensor", "text/xml"));
+  */
   
   return 0;
 }
 
-void registerSensor(char* id, char* descr, char* backend, char* tpl) {
-	CURLcode res;
+int registerSensor(char* id, char* descr, char* backend, char* tpl) {
 
-	char json[1024] = "{\"id\": \"";
+	char json[4096];
+	strcpy(json, "{\"id\": \"");
 	strcat(json, id);
 	strcat(json, "\", \"descr\": \"");
 	strcat(json, descr);
@@ -48,39 +45,32 @@ void registerSensor(char* id, char* descr, char* backend, char* tpl) {
 	strcat(json, "\", \"template\": \"");
 	strcat(json, "\"}}");
 	
-	CURL *curl = curl_easy_init();
-	if(curl) {
-		char url[256] = "http://";
-		strcat(url, server);
-		strcat(url, port);
-		strcat(url, "/sensapp/registry/sensors");
-		
-		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json);
-		res = curl_easy_perform(curl);
-		printf("\nStatus:: %d\n", res);
-		curl_easy_cleanup(curl);
-	}
-}
-
-void getSensorDetails(char* u) {
-	CURLcode res;
-	
-	char url[256] = "http://";
-	strcat(url, server);
+	char url[1024];
+	strcpy(url, server);
 	strcat(url, port);
-	strcat(url, u);
+	strcat(url, "/sensapp/registry/sensors");
 	
-	CURL *curl = curl_easy_init();
-	if(curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, url);
-		res = curl_easy_perform(curl);
-		printf("\nSensor details:: %d\n", res);
-		curl_easy_cleanup(curl);
-	}
+	char command[5135];
+	strcpy(command, "curl --data '");
+	strcat(command, json);
+	strcat(command, "' ");
+	strcat(command, url)
+		
+	return system(command);
 }
 
-void pushData(char* data) {
+int getSensorDetails(char* u) {
+
+	char command[1024];
+	strcpy(command, "curl ");
+	strcat(command, server);
+	strcat(command, port);
+	strcat(command, u);
+	
+	return system(command);
+}
+
+/*void pushData(char* data) {
 	CURLcode res;
 	
 	char url[256] = "http://";
@@ -114,3 +104,4 @@ void getData(char* u, char* contentType) {
 		curl_easy_cleanup(curl);
 	}
 }
+*/
