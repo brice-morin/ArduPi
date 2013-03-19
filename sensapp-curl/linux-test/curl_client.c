@@ -15,11 +15,11 @@ int main() {
   printf(registerSensor("demo-curl/a-sensor", "example sensor", "raw", "Numerical"));
   printf("\n\n");
   
-  printf("Pushing data...\n");
+/*  printf("Pushing data...\n");
   char* data = "{\"bn\":\"demo-curl/a-sensor\", \"bu\":\"m\", \"e\":[{\"v\":10, \"t\": 0 }, {\"v\":12, \"t\": 1 }]}";
   printf(pushData(data));
   printf("\n\n");
-
+*/
   /*
   printf("Retrieving data in JSON...\n");
   printf(getData("/sensapp/databases/raw/data/demo-curl/a-sensor", "application/json"));
@@ -43,10 +43,12 @@ int registerSensor(char* id, char* descr, char* backend, char* tpl) {
 	strcat(json, "\"schema\": { \"backend\": \"");
 	strcat(json, backend);
 	strcat(json, "\", \"template\": \"");
+	strcat(json, tpl);
 	strcat(json, "\"}}");
 	
 	char url[1024];
 	strcpy(url, server);
+	strcat(url, ":");
 	strcat(url, port);
 	strcat(url, "/sensapp/registry/sensors");
 	
@@ -54,7 +56,12 @@ int registerSensor(char* id, char* descr, char* backend, char* tpl) {
 	strcpy(command, "curl --data '");
 	strcat(command, json);
 	strcat(command, "' ");
-	strcat(command, url)
+	strcat(command, "--header 'Content-Type: application/json; charset=ISO-8859-1' ");
+	strcat(command, url);
+
+	printf("Sending command to SensApp:\n");
+	printf(command);
+	printf("\n");
 		
 	return system(command);
 }
