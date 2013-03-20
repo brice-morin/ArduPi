@@ -1,39 +1,87 @@
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 
-int registerSensor(char* id, char* descr, char* backend, char* tpl);
-int getSensorDetails(char* url);
-//int pushData(char* data);
-//int getData(char* url, char* contentType);
+char* exec(const char* command);
+long int timestamp();
+char* timestampCh();
 
-char* server = "localhost";
+char* registerSensor(const char* id, const char* descr, const char* backend, const char* tpl);
+char* getSensorDetails(const char* sensor);
+char* pushData(const char* data);
+char* getData(const char* sensor, const char* contentType);
+
+char* server = "http:\/\/internal.sensapp.org";
 char* port = "8080";
 
 int main() {
+
+  char* sensorID = "demo-curl/a-sensor";
+
   printf("Registering sensor...\n");
-  printf(registerSensor("demo-curl/a-sensor", "example sensor", "raw", "Numerical"));
+  printf(registerSensor(sensorID, "example sensor registered from a RPi via CURL", "raw", "Numerical"));
+  printf("\n\n");
+
+  printf("Sensor details...\n");
+  printf(getSensorDetails(sensorID));
   printf("\n\n");
   
-/*  printf("Pushing data...\n");
-  char* data = "{\"bn\":\"demo-curl/a-sensor\", \"bu\":\"m\", \"e\":[{\"v\":10, \"t\": 0 }, {\"v\":12, \"t\": 1 }]}";
+  printf("Pushing data...\n");
+  char data[5120];
+  strcpy(data, "{\"bn\":\"");
+  strcat(data, sensorID);
+  strcat(data, "\", \"bu\":\"m\", \"e\":[{\"v\":10, \"t\": ");
+  strcat(data, timestampCh());
+  strcat(data, " }]}");
   printf(pushData(data));
   printf("\n\n");
-*/
-  /*
+
+  
   printf("Retrieving data in JSON...\n");
-  printf(getData("/sensapp/databases/raw/data/demo-curl/a-sensor", "application/json"));
-  printf("\n");
-  printf("\n");
+  printf(getData(sensorID, "application/json"));
+  printf("\n\n");
+
   printf("Retrieving data in XML...\n");
-  printf(getData("/sensapp/databases/raw/data/demo-curl/a-sensor", "text/xml"));
-  */
+  printf(getData(sensorID, "text/xml"));
+  printf("\n\n");
   
   return 0;
 }
 
-int registerSensor(char* id, char* descr, char* backend, char* tpl) {
+char* timestampCh() {
+	char result[12];
+	sprintf(result, "%d", timestamp());
+	return result;
+}
 
+long int timestamp() {
+	return time(NULL);
+}
+
+char* exec(const char* command) {
+	FILE* fp;
+	int status;
+	char path[16384];
+	char result[65536];
+
+	fp = popen(command, "r");
+	if (fp == NULL) {
+		printf("Cannot execute command:\n");
+		printf(command);
+		printf("\n");
+		return;
+	}
+
+	while(fgets(path, (sizeof(path)/sizeof(*(path)))+1, fp) != NULL) {
+		strcat(result, path);
+	}
+
+	pclose(fp);
+	return result;
+}
+
+char* registerSensor(const char* id, const char* descr, const char* backend, const char* tpl) {
 	char json[4096];
 	strcpy(json, "{\"id\": \"");
 	strcat(json, id);
@@ -53,62 +101,51 @@ int registerSensor(char* id, char* descr, char* backend, char* tpl) {
 	strcat(url, "/sensapp/registry/sensors");
 	
 	char command[5135];
-	strcpy(command, "curl --data '");
+	strcpy(command, "curl -s --data '");
 	strcat(command, json);
 	strcat(command, "' ");
 	strcat(command, "--header 'Content-Type: application/json; charset=ISO-8859-1' ");
 	strcat(command, url);
 
-	printf("Sending command to SensApp:\n");
-	printf(command);
-	printf("\n");
-		
-	return system(command);
+	return exec(command);	
 }
 
-int getSensorDetails(char* u) {
-
+char* getSensorDetails(const char* sensor) {
 	char command[1024];
-	strcpy(command, "curl ");
+	strcpy(command, "curl -s ");
 	strcat(command, server);
+	strcat(command, ":");
 	strcat(command, port);
-	strcat(command, u);
-	
-	return system(command);
+	strcat(command, "/sensapp/registry/sensors/");
+	strcat(command, sensor);
+
+	return exec(command);
 }
 
-/*void pushData(char* data) {
-	CURLcode res;
+char* pushData(const char* data) {
+	char command[1024];
+	strcpy(command, "curl -s --request PUT --data '");
+	strcat(command, data);
+	strcat(command, "' --header 'Content-Type: application/senml+json; charset=ISO-8859-1' ");
+	strcat(command, server);
+	strcat(command, ":");
+	strcat(command, port);
+	strcat(command, "/sensapp/dispatch");
 	
-	char url[256] = "http://";
-	strcat(url, server);
-	strcat(url, port);
-	strcat(url, "/sensapp/dispatch");
-	
-	CURL *curl = curl_easy_init();
-	if(curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_PUT, 1L);
-		res = curl_easy_perform(curl);
-		printf("\nStatus:: %d\n", res);
-		curl_easy_cleanup(curl);
-	}
+	return exec(command);
 }
 
-void getData(char* u, char* contentType) {
-	CURLcode res;
+char* getData(const char* sensor, const char* contentType) {
+	char command[1024];
+	strcpy(command, "curl -s --header 'Accept: ");
+	strcat(command, contentType);
+	strcat(command, "; charset=ISO-8859-1' ");
+	strcat(command, server);
+	strcat(command, ":");
+	strcat(command, port);
+	strcat(command, "/sensapp/databases/raw/data/");
+	strcat(command, sensor);
 	
-	char url[256] = "http://";
-	strcat(url, server);
-	strcat(url, port);
-	strcat(url, u);
-	
-	CURL *curl = curl_easy_init();
-	if(curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, url);
-		res = curl_easy_perform(curl);
-		printf("\nData:: %d\n", res);
-		curl_easy_cleanup(curl);
-	}
+	return exec(command);
 }
-*/
+
