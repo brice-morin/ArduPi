@@ -12,7 +12,7 @@ char* getSensorDetails(const char* sensor);
 char* pushData(const char* data);
 char* getData(const char* sensor, const char* contentType);
 
-char* server = "http:\/\/internal.sensapp.org";
+char* server = "localhost";
 char* port = "8080";
 
 int main() {
