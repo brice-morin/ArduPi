@@ -1,0 +1,154 @@
+import "../sensapp.thingml"
+
+
+/*****************************************************************************
+ * Definition of the built-in things and messages
+ *****************************************************************************/
+ 
+thing fragment LinuxSensapp includes SensApp
+@c_header "
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>"
+@c_global "
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+
+char* exec(const char* command);
+long int timestamp();
+char* timestampCh();
+
+char* registerSensor(const char* id, const char* descr, const char* backend, const char* tpl);
+char* pushData(const char* data);
+
+char* timestampCh() {
+	char result[12];
+	sprintf(result, \"%d\", timestamp());
+	return result;
+}
+
+long int timestamp() {
+	return time(NULL);
+}
+
+char* exec(const char* command) {
+	FILE* fp;
+	int status;
+	char path[16384];
+	char result[65536];
+
+	fp = popen(command, \"r\");
+	if (fp == NULL) {
+		printf(\"Cannot execute command:\\n\");
+		printf(command);
+		printf(\"\\n\");
+		return;
+	}
+
+    printf(\"DEBUG: execute command:\\n\");
+	printf(command);
+	printf(\"\\n\");
+
+	while(fgets(path, (sizeof(path)/sizeof(*(path)))+1, fp) != NULL) {
+		strcat(result, path);
+	}
+
+	pclose(fp);
+
+    printf(\"DEBUG: command has returned:\\n\");
+	printf(result);
+	printf(\"\\n\");
+
+	return result;
+}
+"
+{
+    
+    property server : String = "localhost"
+    property p : String = "8080"
+
+    function register(id : String, desc : String) do
+    '
+	char json[4096];
+	strcpy(json, "{\"id\": \"");
+	strcat(json, ' & id & ');
+	strcat(json, "\", \"descr\": \"");
+	strcat(json, ' & desc & ');
+	strcat(json, "\",");
+	strcat(json, "\"schema\": { \"backend\": \"");
+	strcat(json, "raw");
+	strcat(json, "\", \"template\": \"");
+	strcat(json, "Numerical");
+	strcat(json, "\"}}");
+	
+	char url[1024];
+	strcpy(url, ' & server &');
+	strcat(url, ":");
+	strcat(url, ' & p & ');
+	strcat(url, "/sensapp/registry/sensors");
+	
+	char command[5135];
+	strcpy(command, "curl --data \'");
+	strcat(command, json);
+	strcat(command, "\' ");
+	strcat(command, "--header \'Content-Type: application/json; charset=ISO-8859-1\' ");
+	strcat(command, url);
+
+	exec(command);	
+    '
+    end
+    
+ 
+    
+    function push(sensorID : String, key : String, value : Integer, unit : String) do
+	'
+    char data[5120];
+    strcpy(data, "{\"bn\":\"");
+    strcat(data, ' & sensorID & ');
+    strcat(data, "/");
+    strcat(data, ' & key & ');
+    strcat(data, "\", \"bu\":\"");
+    strcat(data, ' & unit & ');
+    strcat(data, "\", \"e\":[{\"v\":"); 
+    
+    char stringValue[8];
+    sprintf(stringValue, "%d", ' & value & ');
+    
+    strcat(data, stringValue);
+    strcat(data, ", \"t\": ");
+    strcat(data, timestampCh());
+    strcat(data, " }]}");   
+    
+    char command[1024];
+	strcpy(command, "curl --request PUT --data \'");
+	strcat(command, data);
+	strcat(command, "\' --header \'Content-Type: application/senml+json; charset=ISO-8859-1\' ");
+	strcat(command, ' & server & ');
+	strcat(command, ":");
+	strcat(command, ' & p & ');
+	strcat(command, "/sensapp/dispatch");
+
+    exec(command); 
+    '
+    end
+    
+    statechart LinuxSensappImpl init Running {
+	
+		state Running {
+				
+			internal event m : sensapp?registerSensor
+			action do 
+                register(m.name, "")
+			end
+
+
+            internal event m : sensapp?pushData
+            action do
+                push(m.sensorID, m.key, m.value, "m")//TODO: add unit into message
+            end			
+		}
+		
+	}	
+
+}

@@ -1,0 +1,8 @@
+digraph finite_state_machine {
+	rankdir=LR;
+	INIT_STATE [shape=circle label = "", style = filled, color = "black"];
+		INIT_STATE -> Init [label="init"];
+	Init [label="Init{i}", shape = ellipse];
+		Init -> Process [label="serial?serial_opened{a}"];
+	Process [label="Process\nserial?serial_rx{a}\nserializer?serial_tx{a}", shape = ellipse];
+}

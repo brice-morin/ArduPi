@@ -1,0 +1,28 @@
+import "../datatypes.thingml"
+
+
+/*****************************************************************************
+ * Definition of the built-in things and messages
+ *****************************************************************************/
+ 
+thing fragment SensAppMsgs {
+    message registerSensor(name : String);
+    message pushData(sensorID : String, key : String, value : Integer);
+}
+
+thing fragment SensApp includes SensAppMsgs
+{
+	provided port sensapp
+    {
+		receives registerSensor, pushData
+	}
+}
+
+thing fragment SensAppClient includes SensAppMsgs
+{
+	required port sensapp
+    {
+		sends registerSensor, pushData
+	}
+    
+}

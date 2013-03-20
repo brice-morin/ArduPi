@@ -1,0 +1,6 @@
+digraph finite_state_machine {
+	rankdir=LR;
+	INIT_STATE [shape=circle label = "", style = filled, color = "black"];
+		INIT_STATE -> Ticking [label="init"];
+	Ticking [label="Ticking", shape = ellipse];
+}
