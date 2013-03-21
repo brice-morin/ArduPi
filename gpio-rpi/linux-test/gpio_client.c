@@ -1,4 +1,6 @@
 #include <bcm2835.h>
+#include <sched.h>
+#include <sys/mman.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -30,16 +32,16 @@ int main() {
 	for(i = 0; i < 10; i++) {//10 temperature and light read, with LED blinking. Should take around 10 seconds
 		turnOnLED();
 	
-		printf("Reading temperature... ");
+/*		printf("Reading temperature... ");
 		printf("%d\n", readTemp());
 		printf("\n\n");
-
+*/
 		bcm2835_delay(500);
 		
-		printf("Reading Light... ");
+/*		printf("Reading Light... ");
 		printf("%d\n", readLight());
 		printf("\n\n");
-		
+*/		
 		turnOffLED();
 		
 		bcm2835_delay(500);
@@ -51,13 +53,18 @@ int main() {
 }
 
 void init() {
+
+	//Some code to prevent swapping (and try to get (near) real-time performances...
+	struct sched_param sp;
+	memset(&sp, 0, sizeof(sp));
+	sp.sched_priority = sched_get_priority_max(SCHED_FIFO);
+	sched_setscheduler(0, SCHED_FIFO, &sp);
+	mlockall(MCL_CURRENT | MCL_FUTURE);
+
     // Set RPI pins PIN_TEMP, PIN_LIGHT to be inputs
-    bcm2835_gpio_fsel(PIN_TEMP, BCM2835_GPIO_FSEL_INPT);
+/*	bcm2835_gpio_fsel(PIN_TEMP, BCM2835_GPIO_FSEL_INPT);
 	bcm2835_gpio_fsel(PIN_LIGHT, BCM2835_GPIO_FSEL_INPT);
-    //  with a pullup
-    bcm2835_gpio_set_pud(PIN_TEMP, BCM2835_GPIO_PUD_UP);
-	bcm2835_gpio_set_pud(PIN_LIGHT, BCM2835_GPIO_PUD_UP);
-	
+*/	
 	//Set RPI pin PIN_LED to be an output
 	bcm2835_gpio_fsel(PIN_LED, BCM2835_GPIO_FSEL_OUTP);
 }
