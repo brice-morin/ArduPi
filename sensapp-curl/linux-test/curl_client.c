@@ -12,7 +12,7 @@ char* getSensorDetails(const char* sensor);
 char* pushData(const char* data);
 char* getData(const char* sensor, const char* contentType);
 
-char* server = "localhost";
+char* server = "http:\/\/internal.sensapp.org";
 char* port = "8080";
 
 int main() {
@@ -61,23 +61,35 @@ long int timestamp() {
 
 char* exec(const char* command) {
 	FILE* fp;
-	int status;
-	char path[16384];
-	char result[65536];
+	char* result = NULL;
+	size_t len = 0;
 
+	printf("Excuting command:\n");
+	printf(command);
+	printf("\n\n");
+	
+	fflush(NULL);
 	fp = popen(command, "r");
 	if (fp == NULL) {
-		printf("Cannot execute command:\n");
-		printf(command);
-		printf("\n");
+		perror("Cannot execute command:\n");
+		perror(command);
+		perror("\n");
 		return;
 	}
 
-	while(fgets(path, (sizeof(path)/sizeof(*(path)))+1, fp) != NULL) {
-		strcat(result, path);
+	while(getline(&result, &len, fp) != -1) {
+		fputs(result, stdout);
 	}
-
-	pclose(fp);
+	free(result);
+	fflush(fp);
+	if (pclose(fp) != 0) {
+		perror("Cannot close stream.\n");
+	}
+	
+	printf("Command has responded:\n");
+	printf(result);
+	printf("\n\n");
+	
 	return result;
 }
 
