@@ -5,17 +5,20 @@
 
 char* exec(const char* command);
 long int timestamp();
-char* timestampCh();
 
 char* registerSensor(const char* id, const char* descr, const char* backend, const char* tpl);
 char* getSensorDetails(const char* sensor);
 char* pushData(const char* data);
 char* getData(const char* sensor, const char* contentType);
+int checkConnection();
 
-char* server = "http:\/\/internal.sensapp.org";
+char* server = "http://internal.sensapp.org";
 char* port = "8080";
 
 int main() {
+
+  if (checkConnection() == 0) {
+  printf("Can connect to the internet\n");
 
   char* sensorID = "demo-curl/a-sensor";
 
@@ -29,11 +32,7 @@ int main() {
   
   printf("Pushing data...\n");
   char data[5120];
-  strcpy(data, "{\"bn\":\"");
-  strcat(data, sensorID);
-  strcat(data, "\", \"bu\":\"m\", \"e\":[{\"v\":10, \"t\": ");
-  strcat(data, timestampCh());
-  strcat(data, " }]}");
+  sprintf(data, "{\"bn\":\"%s\", \"bu\":\"m\", \"e\":[{\"v\":10, \"t\":%d}]}", sensorID, timestamp());
   printf(pushData(data));
   printf("\n\n");
 
@@ -47,12 +46,26 @@ int main() {
   printf("\n\n");
   
   return 0;
+  } else {
+        printf("Cannot connect to the internet\n");
+	return -1;
+  }
 }
 
-char* timestampCh() {
-	char result[12];
-	sprintf(result, "%d", timestamp());
-	return result;
+int checkConnection() {
+	printf("checkConnection\n\n");
+	char command[1024];
+	sprintf(command, "curl %s:%s/sensapp", server, port);
+
+	if (system(command) != 0) {//sensapp does not respond
+		perror("Cannot reach sensapp!\n");
+		if (system("curl http://www.google.com") != 0) {//even google does not respond
+			perror("Cannot even reach google\n");
+			return -2;
+		}
+		return -1;
+	}
+	return 0;
 }
 
 long int timestamp() {
@@ -64,99 +77,57 @@ char* exec(const char* command) {
 	char* result = NULL;
 	size_t len = 0;
 
-	printf("Excuting command:\n");
-	printf(command);
-	printf("\n\n");
-	
 	fflush(NULL);
 	fp = popen(command, "r");
 	if (fp == NULL) {
-		perror("Cannot execute command:\n");
-		perror(command);
-		perror("\n");
+		printf("Cannot execute command:\n");
+		printf(command);
+		printf("\n");
 		return;
 	}
 
 	while(getline(&result, &len, fp) != -1) {
 		fputs(result, stdout);
 	}
+
 	free(result);
 	fflush(fp);
 	if (pclose(fp) != 0) {
 		perror("Cannot close stream.\n");
 	}
-	
-	printf("Command has responded:\n");
-	printf(result);
-	printf("\n\n");
-	
 	return result;
 }
 
 char* registerSensor(const char* id, const char* descr, const char* backend, const char* tpl) {
 	char json[4096];
-	strcpy(json, "{\"id\": \"");
-	strcat(json, id);
-	strcat(json, "\", \"descr\": \"");
-	strcat(json, descr);
-	strcat(json, "\",");
-	strcat(json, "\"schema\": { \"backend\": \"");
-	strcat(json, backend);
-	strcat(json, "\", \"template\": \"");
-	strcat(json, tpl);
-	strcat(json, "\"}}");
+        sprintf(json, "{\"id\":\"%d\", \"descr\":\"%s\", \"schema\": {\"backend\":\"%s\", \"template\":\"%s\"}}", id, descr, backend, tpl);
 	
 	char url[1024];
-	strcpy(url, server);
-	strcat(url, ":");
-	strcat(url, port);
-	strcat(url, "/sensapp/registry/sensors");
+        sprintf(url, "%s:%s/sensapp/registry/sensors", server, port);
 	
 	char command[5135];
-	strcpy(command, "curl -s --data '");
-	strcat(command, json);
-	strcat(command, "' ");
-	strcat(command, "--header 'Content-Type: application/json; charset=ISO-8859-1' ");
-	strcat(command, url);
+	sprintf(command, "curl -s --data'%s' --header 'Content-Type: application/json; charset=ISO-8859-1' %s", json, url);
 
 	return exec(command);	
 }
 
 char* getSensorDetails(const char* sensor) {
 	char command[1024];
-	strcpy(command, "curl -s ");
-	strcat(command, server);
-	strcat(command, ":");
-	strcat(command, port);
-	strcat(command, "/sensapp/registry/sensors/");
-	strcat(command, sensor);
+	sprintf(command, "curl -s %s:%s/sensapp/registry/sensors/%s", server, port, sensor);
 
 	return exec(command);
 }
 
 char* pushData(const char* data) {
 	char command[1024];
-	strcpy(command, "curl -s --request PUT --data '");
-	strcat(command, data);
-	strcat(command, "' --header 'Content-Type: application/senml+json; charset=ISO-8859-1' ");
-	strcat(command, server);
-	strcat(command, ":");
-	strcat(command, port);
-	strcat(command, "/sensapp/dispatch");
+	sprintf(command, "curl -s --request PUT --data '%s' --header 'Content-Type: application/senml+json; charset=ISO-8859-1' %s:%s/sensapp/dispatch", data, server, port);
 	
 	return exec(command);
 }
 
 char* getData(const char* sensor, const char* contentType) {
 	char command[1024];
-	strcpy(command, "curl -s --header 'Accept: ");
-	strcat(command, contentType);
-	strcat(command, "; charset=ISO-8859-1' ");
-	strcat(command, server);
-	strcat(command, ":");
-	strcat(command, port);
-	strcat(command, "/sensapp/databases/raw/data/");
-	strcat(command, sensor);
+	sprintf(command, "curl -s --header 'Accept: %s; charset=ISO-8859-1' %s:%s/sensapp/databases/raw/data/%s", contentType, server, port, sensor);
 	
 	return exec(command);
 }
