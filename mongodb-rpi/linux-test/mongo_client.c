@@ -119,7 +119,7 @@ char* processNonUploaded(const char* nodeName, const char* sensorName, int uploa
 int fakeUpload(const char* data) {
     printf(data);
     printf("\n");
-    return 0;
+    return -1;//We simulate a fail (to keep data in the DB)
 }
 
 void createBT() {
