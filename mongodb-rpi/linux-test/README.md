@@ -30,6 +30,8 @@ $ ./mongo_client
 http://raspberry-pi-IP:28017/sensapp/sensor1/_find
 ```
 
+> Mongo is started on port 27017. You should add 1000 to access it via REST, hence port 28017
+
 8. You should see something like (with probably less data):
 ```json
 {
