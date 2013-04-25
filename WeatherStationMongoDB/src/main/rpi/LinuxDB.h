@@ -33,12 +33,13 @@ int id;
 // Variables for the current instance state
 int LinuxDB_LinuxDBImpl_State;
 // Variables for the properties of the instance
+long int LinuxDB_baseTime_var;
 };
 
 // Declaration of prototypes outgoing messages:
 void LinuxDB_LinuxDBImpl_OnEntry(int state, struct LinuxDB_Instance *_instance);
-void LinuxDB_handle_db_push_int(struct LinuxDB_Instance *_instance, char * db, char * sensor, int value);
 void LinuxDB_handle_db_db_init(struct LinuxDB_Instance *_instance);
+void LinuxDB_handle_db_push_int(struct LinuxDB_Instance *_instance, char * db, char * sensor, int value);
 // Declaration of callbacks for incomming messages:
 void register_LinuxDB_send_db_db_init_done_listener(void (*_listener)(struct LinuxDB_Instance*));
 

@@ -17,7 +17,7 @@
         <y:PolyLineEdge>
           <y:LineStyle width="1.0" type="line" color="#000000"></y:LineStyle>
           <y:Arrows source="none" target="standard"></y:Arrows>
-          <y:EdgeLabel alignment="center" preferredPlacement="right" modelName="side_slider" textColor="#000000" fontStyle="plain" distance="2.0" fontSize="12" fontFamily="Dialog" hasLineColor="false" ratio="0.0" hasBackgroundColor="false" visible="true">serial?serial_rx(c){a}</y:EdgeLabel>
+          <y:EdgeLabel alignment="center" preferredPlacement="right" modelName="side_slider" textColor="#000000" fontStyle="plain" distance="2.0" fontSize="12" fontFamily="Dialog" hasLineColor="false" ratio="0.0" hasBackgroundColor="false" visible="true">serial?serial_rx(c)</y:EdgeLabel>
         </y:PolyLineEdge>
       </data>
     </edge><node id="ReceiveMessage">
@@ -37,7 +37,7 @@ serial?serial_rx(c){a}</y:NodeLabel>
         <y:PolyLineEdge>
           <y:LineStyle width="1.0" type="line" color="#000000"></y:LineStyle>
           <y:Arrows source="none" target="standard"></y:Arrows>
-          <y:EdgeLabel alignment="center" preferredPlacement="right" modelName="side_slider" textColor="#000000" fontStyle="plain" distance="2.0" fontSize="12" fontFamily="Dialog" hasLineColor="false" ratio="0.0" hasBackgroundColor="false" visible="true">serial?serial_rx(c){a}</y:EdgeLabel>
+          <y:EdgeLabel alignment="center" preferredPlacement="right" modelName="side_slider" textColor="#000000" fontStyle="plain" distance="2.0" fontSize="12" fontFamily="Dialog" hasLineColor="false" ratio="0.0" hasBackgroundColor="false" visible="true">serial?serial_rx(c)</y:EdgeLabel>
         </y:PolyLineEdge>
       </data>
     </edge><edge source="ReceiveMessage"  target="Idle">

@@ -15,22 +15,42 @@ thing fragment LinuxDB includes DB
 #include \"mongo.h\"
 "
 @c_global "
-#include <stdio.h>
-#include <time.h>
-#include \"mongo.h\"
-
-void push_int(char* db, char* sensor, int value);
-void push_string(char* db, char* sensor, char* value);
-int init();
-int destroy();
-long int timestamp();
-void initEntry();
-void pushEntry(char* dbName);
-
 mongo conn[1];
 bson b[1];
 "
 {
+    property baseTime : Timestamp = 0
+
+    function createBT() do
+    '
+    printf("Creating base time\n");'
+    baseTime = timestamp()
+    'bson_init( b );
+    bson_append_long(b, "bt", ' & baseTime &');'
+    pushEntry("gateway.base")    
+    end
+
+    function initBT() do
+    '
+    mongo_cursor cursor[1];
+    mongo_cursor_init(cursor, conn, "gateway.base" );
+
+    if( mongo_cursor_next( cursor ) == MONGO_OK ) {
+        bson_print( &cursor->current );
+        bson_iterator iterator[1];
+        if ( bson_find( iterator, mongo_cursor_bson( cursor ), "bt" )) {//base time is present in DB'
+            baseTime = 'bson_iterator_long( iterator );
+            printf("Base time fetched from DB\n");
+        } else {' 
+            createBT()
+        '}
+    } else {'
+        createBT()
+    '}
+
+    mongo_cursor_destroy( cursor );
+    '
+    end
 
     function init_db() : Integer do
     '
@@ -42,8 +62,9 @@ bson b[1];
         case MONGO_CONN_NOT_MASTER: printf( "not master\n" ); return 1;
       }
       return conn->err;
-    } else {
-	   return 0;
+    } else {'
+       initBT()
+	   'return 0;
     }
     '
     end
@@ -58,32 +79,46 @@ bson b[1];
     
     function timestamp() : Timestamp do
     '
-    long int ltime = /*static_cast<long int>*/ time(NULL);
-    return ltime;
+    return time(NULL);
     '
     end
     
     function initEntry() do
     '
 	bson_init( b );
-    bson_append_long(b, "t", ' & timestamp() & ');    
+    bson_append_long(b, "t", ' & timestamp() - baseTime & ');    
     '
     end
     
-    function pushEntry(db : String) do
+    function pushEntry(db : String) : Integer do
     '
-    mongo_write_concern options;
-	mongo_write_concern_init(&options);
-	bson_finish( b );
-	mongo_insert( conn, ' & db & ', b, &options);
-	bson_destroy( b );
+    printf("pushing data to: %s\n", ' & db & ');
+    mongo_write_concern options[1];
+    mongo_write_concern_init(options);
+    options->w = 1;//ack
+    options->j = 1;//journaled
+    mongo_write_concern_finish(options);
+
+    bson_finish( b );'
+    var status : Integer = 'mongo_insert( conn, ' & db & ', b, options);
+    bson_destroy( b );
+    mongo_write_concern_destroy(options);
     '
+    return status
     end
     
-    function push_int(db : String, sensor : String, value : Integer) do
+    function push_int(node : String, sensor : String, value : Integer) do
 	initEntry()
     'bson_append_int(b, ' & sensor & ', ' & value & ');'
-	pushEntry(db)
+	pushEntry(getDbName(node, sensor))
+    end
+    
+    function getDbName(node : String, sensor : String) : String do
+    '
+    char* dbName[256];
+    sprintf(dbName, "%s.%s", ' & node & ', ' & sensor & ');
+    return dbName;
+    '
     end
     
     statechart LinuxDBImpl init Running {

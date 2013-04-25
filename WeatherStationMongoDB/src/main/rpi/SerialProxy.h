@@ -24,6 +24,7 @@ int id;
 // Variables for the current instance state
 int SerialProxy_SensorsDisplayImpl_State;
 // Variables for the properties of the instance
+char * SerialProxy_serialPort_var;
 };
 
 // Declaration of prototypes outgoing messages:
