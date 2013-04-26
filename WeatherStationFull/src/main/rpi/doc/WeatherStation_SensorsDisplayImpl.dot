@@ -1,0 +1,11 @@
+digraph finite_state_machine {
+	rankdir=LR;
+	INIT_STATE [shape=circle label = "", style = filled, color = "black"];
+		INIT_STATE -> Init [label="init"];
+	Init [label="Init{i}{o}", shape = ellipse];
+		Init -> InitDB [label="Start?start"];
+	InitDB [label="InitDB{i}{o}", shape = ellipse];
+		InitDB -> Process [label="db?db_init_done"];
+	Process [label="Process{i}\nRemoteControlIn?temperature{a}\nRemoteControlIn?light{a}", shape = ellipse];
+		Process -> Process [label="timer?timer_timeout{a}"];
+}

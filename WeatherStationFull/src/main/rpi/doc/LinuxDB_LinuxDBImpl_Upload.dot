@@ -1,0 +1,12 @@
+digraph finite_state_machine {
+	rankdir=LR;
+	INIT_STATE [shape=circle label = "", style = filled, color = "black"];
+		INIT_STATE -> Waiting [label="init"];
+	Waiting [label="Waiting", shape = ellipse];
+		Waiting -> Uploading [label="collect:db?db_upload{a}"];
+	Uploading [label="Uploading{i}", shape = ellipse];
+		Uploading -> Deleting [label="ok:sensapp?donePushRaw"];
+		Uploading -> Waiting [label="nok:sensapp?failPushRaw"];
+	Deleting [label="Deleting{i}", shape = ellipse];
+		Deleting -> Waiting [label="timer?timer_timeout"];
+}

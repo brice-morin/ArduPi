@@ -1,0 +1,120 @@
+<graphml xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd" xmlns:y="http://www.yworks.com/xml/graphml" xmlns:yed="http://www.yworks.com/xml/yed/3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://graphml.graphdrawing.org/xmlns">
+      <key for="node" id="d6" yfiles.type="nodegraphics"></key>
+      <key for="edge" id="d10" yfiles.type="edgegraphics"></key>
+      <graph edgedefault="directed" id="G">
+          <node id="LinuxDB::LinuxDBImpl::Upload" yfiles.foldertype="group">
+          <data key="d6">
+            <y:ProxyAutoBoundsNode>
+              <y:Realizers active="0">
+                <y:GroupNode>
+                  <y:Fill hasColor="false" transparent="false"></y:Fill>
+                  <y:BorderStyle width="1.0" type="dashed" color="#000000"></y:BorderStyle>
+                  <y:NodeLabel borderDistance="0.0" autoSizePolicy="node_width" alignment="center" modelName="internal" modelPosition="t" textColor="#000000" fontStyle="plain" fontSize="15" fontFamily="Dialog" hasLineColor="false" hasBackgroundColor="false" visible="true">LinuxDB::LinuxDBImpl::Upload</y:NodeLabel>
+                  <y:Shape type="roundrectangle"></y:Shape>
+                  <y:State innerGraphDisplayEnabled="false" closed="false"></y:State>
+                  <y:Insets rightF="15.0" leftF="15.0" right="15" bottom="15" topF="15.0" top="15" bottomF="15.0" left="15"></y:Insets>
+                  <y:BorderInsets rightF="0.0" leftF="0.0" right="0" bottom="1" topF="1" top="1" bottomF="1" left="0"></y:BorderInsets>
+                </y:GroupNode>
+              </y:Realizers>
+            </y:ProxyAutoBoundsNode>
+          </data>
+          <graph edgedefault="directed" id="LinuxDB::LinuxDBImpl::Upload_Graph">
+         <node id="Waiting">
+        <data key="d6">
+          <y:ShapeNode>
+            <y:Geometry width="200.0" height="70.0"></y:Geometry>
+            <y:Fill transparent="false" color="#FFCC66"></y:Fill>
+            <y:BorderStyle width="1.0" type="line" color="#000000"></y:BorderStyle>
+            <y:NodeLabel autoSizePolicy="content" alignment="center" modelName="internal" modelPosition="c" textColor="#000000" fontStyle="plain" fontSize="12" fontFamily="Dialog" hasLineColor="false" hasBackgroundColor="false" visible="true">Waiting</y:NodeLabel>
+            <y:Shape type="roundrectangle"></y:Shape>
+          </y:ShapeNode>
+        </data>
+      </node><edge source="Waiting" id="collect" target="Uploading">
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:LineStyle width="1.0" type="line" color="#000000"></y:LineStyle>
+          <y:Arrows source="none" target="standard"></y:Arrows>
+          <y:EdgeLabel alignment="center" preferredPlacement="right" modelName="side_slider" textColor="#000000" fontStyle="plain" distance="2.0" fontSize="12" fontFamily="Dialog" hasLineColor="false" ratio="0.0" hasBackgroundColor="false" visible="true">collect:db?db_upload{a}</y:EdgeLabel>
+        </y:PolyLineEdge>
+      </data>
+    </edge><node id="Uploading">
+        <data key="d6">
+          <y:ShapeNode>
+            <y:Geometry width="200.0" height="70.0"></y:Geometry>
+            <y:Fill transparent="false" color="#FFCC66"></y:Fill>
+            <y:BorderStyle width="1.0" type="line" color="#000000"></y:BorderStyle>
+            <y:NodeLabel autoSizePolicy="content" alignment="center" modelName="internal" modelPosition="c" textColor="#000000" fontStyle="plain" fontSize="12" fontFamily="Dialog" hasLineColor="false" hasBackgroundColor="false" visible="true">Uploading{i}</y:NodeLabel>
+            <y:Shape type="roundrectangle"></y:Shape>
+          </y:ShapeNode>
+        </data>
+      </node><edge source="Uploading" id="ok" target="Deleting">
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:LineStyle width="1.0" type="line" color="#000000"></y:LineStyle>
+          <y:Arrows source="none" target="standard"></y:Arrows>
+          <y:EdgeLabel alignment="center" preferredPlacement="right" modelName="side_slider" textColor="#000000" fontStyle="plain" distance="2.0" fontSize="12" fontFamily="Dialog" hasLineColor="false" ratio="0.0" hasBackgroundColor="false" visible="true">ok:sensapp?donePushRaw</y:EdgeLabel>
+        </y:PolyLineEdge>
+      </data>
+    </edge><edge source="Uploading" id="nok" target="Waiting">
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:LineStyle width="1.0" type="line" color="#000000"></y:LineStyle>
+          <y:Arrows source="none" target="standard"></y:Arrows>
+          <y:EdgeLabel alignment="center" preferredPlacement="right" modelName="side_slider" textColor="#000000" fontStyle="plain" distance="2.0" fontSize="12" fontFamily="Dialog" hasLineColor="false" ratio="0.0" hasBackgroundColor="false" visible="true">nok:sensapp?failPushRaw</y:EdgeLabel>
+        </y:PolyLineEdge>
+      </data>
+    </edge><node id="Deleting">
+        <data key="d6">
+          <y:ShapeNode>
+            <y:Geometry width="200.0" height="70.0"></y:Geometry>
+            <y:Fill transparent="false" color="#FFCC66"></y:Fill>
+            <y:BorderStyle width="1.0" type="line" color="#000000"></y:BorderStyle>
+            <y:NodeLabel autoSizePolicy="content" alignment="center" modelName="internal" modelPosition="c" textColor="#000000" fontStyle="plain" fontSize="12" fontFamily="Dialog" hasLineColor="false" hasBackgroundColor="false" visible="true">Deleting{i}</y:NodeLabel>
+            <y:Shape type="roundrectangle"></y:Shape>
+          </y:ShapeNode>
+        </data>
+      </node><edge source="Deleting"  target="Waiting">
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:LineStyle width="1.0" type="line" color="#000000"></y:LineStyle>
+          <y:Arrows source="none" target="standard"></y:Arrows>
+          <y:EdgeLabel alignment="center" preferredPlacement="right" modelName="side_slider" textColor="#000000" fontStyle="plain" distance="2.0" fontSize="12" fontFamily="Dialog" hasLineColor="false" ratio="0.0" hasBackgroundColor="false" visible="true">timer?timer_timeout</y:EdgeLabel>
+        </y:PolyLineEdge>
+      </data>
+    </edge><node id="LinuxDB::LinuxDBImpl::Upload_INIT">
+      <data key="d6">
+        <y:ShapeNode>
+          <y:Fill transparent="false" color="#000000"></y:Fill>
+          <y:BorderStyle width="1.0" type="line" color="#000000"></y:BorderStyle>
+          <y:NodeLabel autoSizePolicy="content" alignment="center" modelName="internal" modelPosition="c" textColor="#FFFFFF" fontStyle="bold" fontSize="12" fontFamily="Dialog" hasLineColor="false" hasBackgroundColor="false" visible="true">I</y:NodeLabel>
+          <y:Shape type="ellipse"></y:Shape>
+        </y:ShapeNode>
+      </data>
+    </node><edge source="LinuxDB::LinuxDBImpl::Upload_INIT" id="LinuxDB::LinuxDBImpl::Upload_INITT" target="Waiting">
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:LineStyle width="1.0" type="line" color="#000000"></y:LineStyle>
+          <y:Arrows source="none" target="standard"></y:Arrows>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+        </graph>
+        </node><node id="LinuxDB::LinuxDBImpl_INIT">
+      <data key="d6">
+        <y:ShapeNode>
+          <y:Fill transparent="false" color="#000000"></y:Fill>
+          <y:BorderStyle width="1.0" type="line" color="#000000"></y:BorderStyle>
+          <y:NodeLabel autoSizePolicy="content" alignment="center" modelName="internal" modelPosition="c" textColor="#FFFFFF" fontStyle="bold" fontSize="12" fontFamily="Dialog" hasLineColor="false" hasBackgroundColor="false" visible="true">I</y:NodeLabel>
+          <y:Shape type="ellipse"></y:Shape>
+        </y:ShapeNode>
+      </data>
+    </node><edge source="LinuxDB::LinuxDBImpl_INIT" id="LinuxDB::LinuxDBImpl_INITT" target="Running">
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:LineStyle width="1.0" type="line" color="#000000"></y:LineStyle>
+          <y:Arrows source="none" target="standard"></y:Arrows>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+        </graph>
+    </graphml>

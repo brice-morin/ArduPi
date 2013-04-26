@@ -1,0 +1,41 @@
+import "../datatypes.thingml"
+
+
+/*****************************************************************************
+ * Definition of the built-in things and messages
+ *****************************************************************************/
+ 
+thing fragment SensAppMsgs {
+    message registerSensor(node : String, sensor : String/*, unit : String*/);//Ideally, unit should be declared once, when registering sensor...
+    message pushData(node : String, sensor : String, value : Integer, unit : String);
+    message pushRawData(data : String);
+    message doneRegister();
+    message failRegister();
+    message donePush();
+    message failPush();
+    message donePushRaw();
+    message failPushRaw();
+}
+
+thing fragment SensApp includes SensAppMsgs
+{
+	provided port sensapp
+    {
+		receives registerSensor, pushData, pushRawData
+        sends doneRegister, failRegister
+        sends donePush, failPush
+        sends donePushRaw, failPushRaw
+	}
+}
+
+thing fragment SensAppClient includes SensAppMsgs
+{
+	required port sensapp
+    {
+		sends registerSensor, pushData, pushRawData
+        receives doneRegister, failRegister
+        receives donePush, failPush
+        receives donePushRaw, failPushRaw
+	}
+    
+}

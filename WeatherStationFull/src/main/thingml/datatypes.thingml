@@ -1,0 +1,114 @@
+/* ThingML Framework */
+
+/*****************************************************************************
+ * Definition of the default ThingML DataTypes
+ * The size of Java primitive types is given here: http://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html
+ * TODO: some information is missing to properly serialize/deserialize some types, typically UInt and Int, which have the same size, but different encodings
+ *****************************************************************************/
+datatype Byte	
+	@c_type "uint8_t"
+	@c_byte_size "1"
+    @ros_type "uint8"
+	@java_type "Byte";
+
+datatype Boolean	
+	@c_type "uint8_t"
+	@c_byte_size "1"
+    @ros_type "uint8"
+	@java_type "Boolean";
+
+datatype Integer	
+	@c_type "int"
+	@c_byte_size "2"
+	@java_type "Integer"
+    @ros_type "int16"
+    @scala_type "Int";
+	
+datatype UInt8	
+	@c_type "uint8_t"
+	@c_byte_size "1"
+	@java_type "Integer"
+    @ros_type "uint8"
+    @scala_type "Int";
+	
+datatype Int8	
+	@c_type "int8_t"
+	@c_byte_size "1"
+	@java_type "Integer"
+    @ros_type "int8"
+    @scala_type "Int";
+
+datatype UInt16	
+	@c_type "uint16_t"
+	@c_byte_size "2"
+	@java_type "Integer"
+    @ros_type "uint16"
+    @scala_type "Int";
+
+datatype Int16	
+	@c_type "int16_t"
+    @c_byte_size "2"
+	@java_type "Integer"
+    @ros_type "int16"
+    @scala_type "Int";
+
+datatype UInt32	
+	@c_type "uint32_t"
+	@c_byte_size "4"
+	@java_type "Integer"
+    @ros_type "uint32"
+    @scala_type "Int";
+
+datatype Int32	
+	@c_type "int32_t"
+    @c_byte_size "4"
+	@java_type "Integer"
+    @ros_type "int32"
+    @scala_type "Int";
+
+datatype Long	
+	@c_type "long"
+	@c_byte_size "4"
+	@java_type "Integer"
+    @ros_type "int64"
+    @scala_type "Int";
+	
+datatype ULong	
+	@c_type "unsigned long"
+	@c_byte_size "4"
+	@java_type "Integer"
+    @ros_type "uint64"
+    @scala_type "Int";
+
+datatype Double	
+	@c_type "double"
+	@c_byte_size "4"
+	@java_type "Float";
+
+datatype Float	
+	@c_type "float"
+	@c_byte_size "4"
+    @ros_type "float32"
+	@java_type "Float";
+
+datatype Char	
+	@c_type "char"
+	@c_byte_size "1"
+    @ros_type "uint8"
+	@java_type "Char";
+
+datatype String
+	@c_type "char *"
+	@c_byte_size "*"
+    @ros_type "string"
+	@java_type "String";
+	
+enumeration DigitalState 
+	@java_type "Byte"
+    @c_byte_size "1"
+    @ros_type "uint8"
+	@c_type "uint8_t"
+{
+	LOW @enum_val "0"
+	HIGH @enum_val "1"
+}

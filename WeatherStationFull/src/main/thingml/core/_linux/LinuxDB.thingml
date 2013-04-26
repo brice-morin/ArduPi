@@ -1,0 +1,245 @@
+import "../db.thingml"
+import "../sensapp.thingml"
+import "../timer.thingml"
+
+
+/*****************************************************************************
+ * Definition of the built-in things and messages
+ *****************************************************************************/
+ 
+ /**
+ * IMPORTANT: You should have mongod running on the RPi
+ * See https://github.com/brice-morin/ArduPi/tree/master/mongodb-rpi/linux-test
+ */
+ 
+ datatype Timestamp
+ @c_type "long int";
+ 
+ datatype BSON
+ @c_type "bson*";
+ 
+thing fragment LinuxDB includes DB, SensAppClient, TimerClient
+@c_header "
+#include <stdio.h>
+#include <time.h>
+#include \"mongo.h\"
+"
+@c_global "
+mongo conn[1];
+bson b[1];
+bson query[1];
+"
+{
+    property baseTime : Timestamp = 0
+
+    function createBT() do
+    '
+    printf("Creating base time\n");'
+    baseTime = timestamp()
+    'bson_init( b );
+    bson_append_long(b, "bt", ' & baseTime &');'
+    pushEntry("gateway.base")    
+    end
+
+    function initBT() do
+    '
+    mongo_cursor cursor[1];
+    mongo_cursor_init(cursor, conn, "gateway.base" );
+
+    if( mongo_cursor_next( cursor ) == MONGO_OK ) {
+        bson_print( &cursor->current );
+        bson_iterator iterator[1];
+        if ( bson_find( iterator, mongo_cursor_bson( cursor ), "bt" )) {//base time is present in DB'
+            baseTime = 'bson_iterator_long( iterator );
+            printf("Base time fetched from DB\n");
+        } else {' 
+            createBT()
+        '}
+    } else {'
+        createBT()
+    '}
+
+    mongo_cursor_destroy( cursor );
+    '
+    end
+
+    function init_db() : Integer do
+    '
+    int status = mongo_client( conn, "127.0.0.1", 27017 );
+    if( status != MONGO_OK ) {
+      switch ( conn->err ) {
+        case MONGO_CONN_NO_SOCKET:  printf( "no socket\n" ); return 1;
+        case MONGO_CONN_FAIL:       printf( "connection failed\n" ); return 1;
+        case MONGO_CONN_NOT_MASTER: printf( "not master\n" ); return 1;
+      }
+      return conn->err;
+    } else {'
+       initBT()
+	   'return 0;
+    }
+    '
+    end
+    
+    function destroy() : Integer do
+    '
+	mongo_destroy( conn );
+	bson_destroy( b );
+	return 0;    
+    '
+    end
+    
+    function timestamp() : Timestamp do
+    '
+    return time(NULL);
+    '
+    end
+    
+    function initEntry() do
+    '
+	bson_init( b );
+    bson_append_long(b, "t", ' & timestamp() - baseTime & ');    
+    '
+    end
+    
+    function pushEntry(db : String) : Integer do
+    '
+    printf("pushing data to: %s\n", ' & db & ');
+    mongo_write_concern options[1];
+    mongo_write_concern_init(options);
+    options->w = 1;//ack
+    options->j = 1;//journaled
+    mongo_write_concern_finish(options);
+
+    bson_finish( b );'
+    var status : Integer = 'mongo_insert( conn, ' & db & ', b, options);
+    bson_destroy( b );
+    mongo_write_concern_destroy(options);
+    '
+    return status
+    end
+    
+    function push_int(node : String, sensor : String, value : Integer) do
+	initEntry()
+    'bson_append_int(b, "v", ' & value & ');'
+	pushEntry(getDbName(node, sensor))
+    end
+    
+    function getDbName(node : String, sensor : String) : String do
+    '
+    char* dbName[256];
+    sprintf(dbName, "%s.%s", ' & node & ', ' & sensor & ');
+    return dbName;
+    '
+    end
+        
+    statechart LinuxDBImpl init Running {
+	
+        property currentTime : Timestamp
+        //property query : BSON
+        property node : String
+        property sensor : String
+
+		state Running {
+				
+			internal event m : db?db_init
+			action do 
+                if (init_db() == 0) do
+                    db!db_init_done()
+                end
+			end
+
+            internal event m : db?push_int
+            action do
+                push_int(m.node, m.sensor, m.value)
+            end			
+		}
+
+
+        //TODO: move this behavior in the app, as it has nothing to do with DB stuff!
+        region Upload init Waiting {         
+                                    
+             state Waiting {
+                 transition collect -> Uploading
+                 event up : db?db_upload
+                 action do
+                    node = up.node
+                    sensor = up.sensor
+                    currentTime = timestamp() - baseTime
+                 end
+             }
+             
+             state Uploading {
+                 on entry do
+                    '
+                    const char* dbName = ' getDbName(node, sensor)';
+                    char data[262144];
+                    mongo_cursor cursor[1];
+                    bson_init(query);
+                    bson_append_start_object(query, "t");
+                    bson_append_long(query, "$lte", ' & currentTime & ');
+                    bson_append_finish_object(query);
+                    bson_finish(query);
+                    
+                    
+                    mongo_cursor_init(cursor, conn, dbName);
+                    mongo_cursor_set_query(cursor, query);
+
+                    sprintf(data, "{\"bn\":\"%s/%s\", \"bu\":\"m\", \"bt\":%d, \"e\":[", ' & node & ', ' & sensor & ', ' & baseTime & ');
+
+                    int i = 0;
+                    while(mongo_cursor_next(cursor) == MONGO_OK) {
+                        bson_iterator iterator[1];
+                        if (bson_find(iterator, mongo_cursor_bson(cursor), "t")) {
+                            char singleData[512];
+                            long t = bson_iterator_long(iterator);
+                            if (bson_find(iterator, mongo_cursor_bson(cursor), "v")) {
+                                const long value = bson_iterator_long(iterator);
+                                sprintf(singleData, "{\"t\":%d, \"v\":%d}", t, value);
+                                if (i > 0)
+                                    strcat(data, ", ");
+                                strcat(data, singleData);
+		                          printf("data: %s\n", singleData);
+                                i++;
+                            } else {
+                                perror("Cannot find value\n");
+                            }
+                        } else {
+                            perror("Cannot find timestamp\n");
+                        }
+                    }
+
+                    strcat(data, "]}");
+                    //printf("%s\n", data);
+                    '
+                    sensapp!pushRawData('data')
+                 end
+                 
+                 transition ok -> Deleting
+                 event sensapp?donePushRaw
+                 
+                 transition nok -> Waiting
+                 event sensapp?failPushRaw
+             }
+             
+             state Deleting {
+                 on entry do
+                 '
+                 mongo_write_concern con[1];
+                 mongo_write_concern_init(con);
+                 if(mongo_remove(conn, ' & getDbName(node, sensor) & ', query, con) == MONGO_OK) {
+                    printf("Uploaded data have been removed\n");
+                 } else {
+                    perror("Problem while removing uploaded data\n");
+                 }
+                 '
+                 timer!timer_start(1)
+                 end
+                 
+                 transition -> Waiting//Systematic transitions not supported by ThingML C compiler... what a shame!
+                 event timer?timer_timeout
+             }    
+        }
+		
+	}	
+
+}
