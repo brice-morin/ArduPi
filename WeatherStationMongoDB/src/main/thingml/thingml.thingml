@@ -6,4 +6,3 @@ import "datatypes.thingml"
 // Import everithing in core
 import "core/scheduler.thingml"
 import "core/timer.thingml"
-import "core/comm.thingml"
