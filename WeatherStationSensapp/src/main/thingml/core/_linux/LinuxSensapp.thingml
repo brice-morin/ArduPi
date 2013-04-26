@@ -1,4 +1,5 @@
 import "../sensapp.thingml"
+import "../timer.thingml"
 
 
 /*****************************************************************************
@@ -11,23 +12,6 @@ thing fragment LinuxSensapp includes SensApp
 #include <time.h>
 #include <stdlib.h>"
 @c_global "
-#include <stdio.h>
-#include <time.h>
-#include <stdlib.h>
-
-char* exec(const char* command);
-long int timestamp();
-char* timestampCh();
-
-char* registerSensor(const char* id, const char* descr, const char* backend, const char* tpl);
-char* pushData(const char* data);
-
-char* timestampCh() {
-	char result[12];
-	sprintf(result, \"%d\", timestamp());
-	return result;
-}
-
 long int timestamp() {
 	return time(NULL);
 }
@@ -37,121 +21,93 @@ char* exec(const char* command) {
 	char* result = NULL;
 	size_t len = 0;
 
-	printf("Excuting command:\n");
-	printf(command);
-	printf("\n\n");
-	
 	fflush(NULL);
-	fp = popen(command, "r");
+	fp = popen(command, \"r\");
 	if (fp == NULL) {
-		perror("Cannot execute command:\n");
-		perror(command);
-		perror("\n");
+		printf(\"Cannot execute command: %s\\n\", command);
 		return;
 	}
 
 	while(getline(&result, &len, fp) != -1) {
 		fputs(result, stdout);
 	}
+
 	free(result);
 	fflush(fp);
 	if (pclose(fp) != 0) {
-		perror("Cannot close stream.\n");
+		perror(\"Cannot close stream.\\n\");
 	}
-	
-	printf("Command has responded:\n");
-	printf(result);
-	printf("\n\n");
-	
 	return result;
 }
 "
 {
     
-    property server : String = "localhost"
+    property server : String = "http://internal.sensapp.org"
     property p : String = "8080"
-
-    function register(id : String, desc : String) do
+    
+    function checkConnection() : Integer do
     '
-	char json[4096];
-	strcpy(json, "{\"id\": \"");
-	strcat(json, ' & id & ');
-	strcat(json, "\", \"descr\": \"");
-	strcat(json, ' & desc & ');
-	strcat(json, "\",");
-	strcat(json, "\"schema\": { \"backend\": \"");
-	strcat(json, "raw");
-	strcat(json, "\", \"template\": \"");
-	strcat(json, "Numerical");
-	strcat(json, "\"}}");
-	
-	char url[1024];
-	strcpy(url, ' & server &');
-	strcat(url, ":");
-	strcat(url, ' & p & ');
-	strcat(url, "/sensapp/registry/sensors");
-	
-	char command[5135];
-	strcpy(command, "curl --data \'");
-	strcat(command, json);
-	strcat(command, "\' ");
-	strcat(command, "--header \'Content-Type: application/json; charset=ISO-8859-1\' ");
-	strcat(command, url);
-
-	exec(command);	
+	char command[1024];
+	sprintf(command, "curl %s:%s/sensapp", ' & server & ', ' & p & ');
+	if (system(command) != 0) {//sensapp does not respond
+		perror("Cannot reach sensapp!\n");
+		if (system("curl http://www.google.com") != 0) {//even google does not respond
+			perror("Cannot even reach google\n");
+			return -2;
+		}
+		return -1;
+	}
+	return 0;  
     '
     end
-    
- 
-    
-    function push(sensorID : String, key : String, value : Integer, unit : String) do
-	'
-    char data[5120];
-    strcpy(data, "{\"bn\":\"");
-    strcat(data, ' & sensorID & ');
-    strcat(data, "/");
-    strcat(data, ' & key & ');
-    strcat(data, "\", \"bu\":\"");
-    strcat(data, ' & unit & ');
-    strcat(data, "\", \"e\":[{\"v\":"); 
-    
-    char stringValue[8];
-    sprintf(stringValue, "%d", ' & value & ');
-    
-    strcat(data, stringValue);
-    strcat(data, ", \"t\": ");
-    strcat(data, timestampCh());
-    strcat(data, " }]}");   
-    
-    char command[1024];
-	strcpy(command, "curl --request PUT --data \'");
-	strcat(command, data);
-	strcat(command, "\' --header \'Content-Type: application/senml+json; charset=ISO-8859-1\' ");
-	strcat(command, ' & server & ');
-	strcat(command, ":");
-	strcat(command, ' & p & ');
-	strcat(command, "/sensapp/dispatch");
 
-    exec(command); 
+    function register(node : String, sensor : String) do
+    if (checkConnection() == 0) do
     '
+	 char json[4096];
+     sprintf(json, "{\"id\":\"%s/%s\", \"descr\":\"ThingML device\", \"schema\": {\"backend\":\"raw\", \"template\":\"Numerical\"}}", ' & node & ', ' & sensor & ');
+	
+	 char url[1024];
+     sprintf(url, "%s:%s/sensapp/registry/sensors", ' & server & ', ' & p & ');
+	
+	 char command[5135];
+	 sprintf(command, "curl -s --data\'%s\' --header \'Content-Type: application/json; charset=ISO-8859-1\' %s", json, url);
+
+	 //return exec(command);	
+    '
+    end
+    end
+    
+    function push(node : String, sensor : String, value : Integer, unit : String) do
+	if (checkConnection() == 0) do
+    '
+     char data[5120];
+     sprintf(data, "{\"bn\":\"%s/%s\", \"bu\":\"%s\", \"e\":[{\"v\":%d, \"t\":%d}]}", ' & node & ', ' & sensor & ', ' & unit & ', ' & value & ', timestamp());
+     char command[1024];
+	 sprintf(command, "curl -s --request PUT --data \'%s\' --header \'Content-Type: application/senml+json; charset=ISO-8859-1\' %s:%s/sensapp/dispatch", data, ' & server & ', ' & p & ');
+
+     //TODO: we need to parse the result of the command and return a proper status (int)
+
+	 //return exec(command);
+    '
+    end
     end
     
     statechart LinuxSensappImpl init Running {
-	
+
 		state Running {
 				
 			internal event m : sensapp?registerSensor
 			action do 
-                register(m.name, "")
+                register(m.node, m.sensor)
 			end
 
 
             internal event m : sensapp?pushData
             action do
-                push(m.sensorID, m.key, m.value, "m")//TODO: add unit into message
+                push(m.node, m.sensor, m.value, m.unit)
             end			
-		}
-		
+		}		
 	}	
 
 }

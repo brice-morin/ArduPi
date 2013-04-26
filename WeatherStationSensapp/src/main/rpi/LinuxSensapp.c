@@ -13,59 +13,32 @@
 
 // BEGIN: Code from the c_global annotation LinuxSensapp
 
-#include <stdio.h>
-#include <time.h>
-#include <stdlib.h>
-
-char* exec(const char* command);
-long int timestamp();
-char* timestampCh();
-
-char* registerSensor(const char* id, const char* descr, const char* backend, const char* tpl);
-char* pushData(const char* data);
-
-char* timestampCh() {
-	char result[12];
-	sprintf(result, "%d", timestamp());
-	return result;
-}
-
 long int timestamp() {
-	return time(NULL);
+    return time(NULL);
 }
 
 char* exec(const char* command) {
-	FILE* fp;
-	char* result = NULL;
-	size_t len = 0;
+    FILE* fp;
+    char* result = NULL;
+    size_t len = 0;
 
-	printf("Excuting command:\n");
-	printf(command);
-	printf("\n\n");
-	
-	fflush(NULL);
-	fp = popen(command, "r");
-	if (fp == NULL) {
-		perror("Cannot execute command:\n");
-		perror(command);
-		perror("\n");
-		return;
-	}
+    fflush(NULL);
+    fp = popen(command, "r");
+    if (fp == NULL) {
+        printf("Cannot execute command: %s\n", command);
+        return;
+    }
 
-	while(getline(&result, &len, fp) != -1) {
-		fputs(result, stdout);
-	}
-	free(result);
-	fflush(fp);
-	if (pclose(fp) != 0) {
-		perror("Cannot close stream.\n");
-	}
-	
-	printf("Command has responded:\n");
-	printf(result);
-	printf("\n\n");
-	
-	return result;
+    while(getline(&result, &len, fp) != -1) {
+        fputs(result, stdout);
+    }
+
+    free(result);
+    fflush(fp);
+    if (pclose(fp) != 0) {
+        perror("Cannot close stream.\n");
+    }
+    return result;
 }
 
 // END: Code from the c_global annotation LinuxSensapp
@@ -74,127 +47,118 @@ char* exec(const char* command) {
 #ifdef __cplusplus
 extern "C" {
 #endif
-void LinuxSensapp_LinuxSensappImpl_OnExit(int state, struct LinuxSensapp_Instance *_instance);
-void f_LinuxSensapp_register(struct LinuxSensapp_Instance *_instance, char * id, char * desc);
-void f_LinuxSensapp_push(struct LinuxSensapp_Instance *_instance, char * sensorID, char * key, int value, char * unit);
+    void LinuxSensapp_LinuxSensappImpl_OnExit(int state, struct LinuxSensapp_Instance *_instance);
+    int f_LinuxSensapp_checkConnection(struct LinuxSensapp_Instance *_instance);
+    void f_LinuxSensapp_register(struct LinuxSensapp_Instance *_instance, char * node, char * sensor);
+    void f_LinuxSensapp_push(struct LinuxSensapp_Instance *_instance, char * node, char * sensor, int value, char * unit);
 #ifdef __cplusplus
 }
 #endif
 
 // Declaration of functions:
-// Definition of function register
-void f_LinuxSensapp_register(struct LinuxSensapp_Instance *_instance, char * id, char * desc) {
-{
+// Definition of function checkConnection
+int f_LinuxSensapp_checkConnection(struct LinuxSensapp_Instance *_instance) {
+    {
 
-	char json[4096];
-	strcpy(json, "{\"id\": \"");
-	strcat(json, id);
-	strcat(json, "\", \"descr\": \"");
-	strcat(json, desc);
-	strcat(json, "\",");
-	strcat(json, "\"schema\": { \"backend\": \"");
-	strcat(json, "raw");
-	strcat(json, "\", \"template\": \"");
-	strcat(json, "Numerical");
-	strcat(json, "\"}}");
-	
-	char url[1024];
-	strcpy(url, _instance->LinuxSensapp_server_var);
-	strcat(url, ":");
-	strcat(url, _instance->LinuxSensapp_p_var);
-	strcat(url, "/sensapp/registry/sensors");
-	
-	char command[5135];
-	strcpy(command, "curl -s --data '");
-	strcat(command, json);
-	strcat(command, "' ");
-	strcat(command, "--header 'Content-Type: application/json; charset=ISO-8859-1' ");
-	strcat(command, url);
+        char command[1024];
+        sprintf(command, "curl %s:%s/sensapp", _instance->LinuxSensapp_server_var, _instance->LinuxSensapp_p_var);
+        if (system(command) != 0) {//sensapp does not respond
+            perror("Cannot reach sensapp!\n");
+            if (system("curl http://www.google.com") != 0) {//even google does not respond
+                perror("Cannot even reach google\n");
+                return -2;
+            }
+            return -1;
+        }
+        return 0;
 
-	exec(command);	
-    
+    }
 }
+
+// Definition of function register
+void f_LinuxSensapp_register(struct LinuxSensapp_Instance *_instance, char * node, char * sensor) {
+    {
+        if(f_LinuxSensapp_checkConnection(_instance) == 0) {
+
+            char json[4096];
+            sprintf(json, "{\"id\":\"%s/%s\", \"descr\":\"ThingML device\", \"schema\": {\"backend\":\"raw\", \"template\":\"Numerical\"}}", node, sensor);
+
+            char url[1024];
+            sprintf(url, "%s:%s/sensapp/registry/sensors", _instance->LinuxSensapp_server_var, _instance->LinuxSensapp_p_var);
+
+            char command[5135];
+            sprintf(command, "curl -s --data'%s' --header 'Content-Type: application/json; charset=ISO-8859-1' %s", json, url);
+
+            //return exec(command);
+
+        }
+    }
 }
 
 // Definition of function push
-void f_LinuxSensapp_push(struct LinuxSensapp_Instance *_instance, char * sensorID, char * key, int value, char * unit) {
-{
+void f_LinuxSensapp_push(struct LinuxSensapp_Instance *_instance, char * node, char * sensor, int value, char * unit) {
+    {
+        if(f_LinuxSensapp_checkConnection(_instance) == 0) {
 
-    char data[5120];
-    strcpy(data, "{\"bn\":\"");
-    strcat(data, sensorID);
-    strcat(data, "/");
-    strcat(data, key);
-    strcat(data, "\", \"bu\":\"");
-    strcat(data, unit);
-    strcat(data, "\", \"e\":[{\"v\":"); 
-    
-    char stringValue[8];
-    sprintf(stringValue, "%d", value);
-    
-    strcat(data, stringValue);
-    strcat(data, ", \"t\": ");
-    strcat(data, timestampCh());
-    strcat(data, " }]}");   
-    
-    char command[1024];
-	strcpy(command, "curl -s --request PUT --data '");
-	strcat(command, data);
-	strcat(command, "' --header 'Content-Type: application/senml+json; charset=ISO-8859-1' ");
-	strcat(command, _instance->LinuxSensapp_server_var);
-	strcat(command, ":");
-	strcat(command, _instance->LinuxSensapp_p_var);
-	strcat(command, "/sensapp/dispatch");
+            char data[5120];
+            sprintf(data, "{\"bn\":\"%s/%s\", \"bu\":\"%s\", \"e\":[{\"v\":%d, \"t\":%d}]}", node, sensor, unit, value, timestamp());
+            char command[1024];
+            sprintf(command, "curl -s --request PUT --data '%s' --header 'Content-Type: application/senml+json; charset=ISO-8859-1' %s:%s/sensapp/dispatch", data, _instance->LinuxSensapp_server_var, _instance->LinuxSensapp_p_var);
 
-    exec(command); 
-    
-}
+            //TODO: we need to parse the result of the command and return a proper status (int)
+
+            //return exec(command);
+
+        }
+    }
 }
 
 
 // On Entry Actions:
 void LinuxSensapp_LinuxSensappImpl_OnEntry(int state, struct LinuxSensapp_Instance *_instance) {
-switch(state) {
-case LINUXSENSAPP_LINUXSENSAPPIMPL_STATE:
-_instance->LinuxSensapp_LinuxSensappImpl_State = LINUXSENSAPP_LINUXSENSAPPIMPL_RUNNING_STATE;
-LinuxSensapp_LinuxSensappImpl_OnEntry(_instance->LinuxSensapp_LinuxSensappImpl_State, _instance);
-break;
-case LINUXSENSAPP_LINUXSENSAPPIMPL_RUNNING_STATE:
-break;
-default: break;
-}
+    switch(state) {
+    case LINUXSENSAPP_LINUXSENSAPPIMPL_STATE:
+        _instance->LinuxSensapp_LinuxSensappImpl_State = LINUXSENSAPP_LINUXSENSAPPIMPL_RUNNING_STATE;
+        LinuxSensapp_LinuxSensappImpl_OnEntry(_instance->LinuxSensapp_LinuxSensappImpl_State, _instance);
+        break;
+    case LINUXSENSAPP_LINUXSENSAPPIMPL_RUNNING_STATE:
+        break;
+    default:
+        break;
+    }
 }
 
 // On Exit Actions:
 void LinuxSensapp_LinuxSensappImpl_OnExit(int state, struct LinuxSensapp_Instance *_instance) {
-switch(state) {
-case LINUXSENSAPP_LINUXSENSAPPIMPL_STATE:
-LinuxSensapp_LinuxSensappImpl_OnExit(_instance->LinuxSensapp_LinuxSensappImpl_State, _instance);
-break;
-case LINUXSENSAPP_LINUXSENSAPPIMPL_RUNNING_STATE:
-break;
-default: break;
-}
+    switch(state) {
+    case LINUXSENSAPP_LINUXSENSAPPIMPL_STATE:
+        LinuxSensapp_LinuxSensappImpl_OnExit(_instance->LinuxSensapp_LinuxSensappImpl_State, _instance);
+        break;
+    case LINUXSENSAPP_LINUXSENSAPPIMPL_RUNNING_STATE:
+        break;
+    default:
+        break;
+    }
 }
 
 // Event Handlers for incomming messages:
-void LinuxSensapp_handle_sensapp_pushData(struct LinuxSensapp_Instance *_instance, char * sensorID, char * key, int value) {
-if (_instance->LinuxSensapp_LinuxSensappImpl_State == LINUXSENSAPP_LINUXSENSAPPIMPL_RUNNING_STATE) {
-if (1) {
-{
-f_LinuxSensapp_push(_instance, sensorID, key, value, "m");
+void LinuxSensapp_handle_sensapp_registerSensor(struct LinuxSensapp_Instance *_instance, char * node, char * sensor) {
+    if (_instance->LinuxSensapp_LinuxSensappImpl_State == LINUXSENSAPP_LINUXSENSAPPIMPL_RUNNING_STATE) {
+        if (1) {
+            {
+                f_LinuxSensapp_register(_instance, node, sensor);
+            }
+        }
+    }
 }
-}
-}
-}
-void LinuxSensapp_handle_sensapp_registerSensor(struct LinuxSensapp_Instance *_instance, char * name) {
-if (_instance->LinuxSensapp_LinuxSensappImpl_State == LINUXSENSAPP_LINUXSENSAPPIMPL_RUNNING_STATE) {
-if (1) {
-{
-f_LinuxSensapp_register(_instance, name, "");
-}
-}
-}
+void LinuxSensapp_handle_sensapp_pushData(struct LinuxSensapp_Instance *_instance, char * node, char * sensor, int value, char * unit) {
+    if (_instance->LinuxSensapp_LinuxSensappImpl_State == LINUXSENSAPP_LINUXSENSAPPIMPL_RUNNING_STATE) {
+        if (1) {
+            {
+                f_LinuxSensapp_push(_instance, node, sensor, value, unit);
+            }
+        }
+    }
 }
 
 // Observers for outgoing messages:

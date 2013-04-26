@@ -38,8 +38,8 @@ char * LinuxSensapp_p_var;
 
 // Declaration of prototypes outgoing messages:
 void LinuxSensapp_LinuxSensappImpl_OnEntry(int state, struct LinuxSensapp_Instance *_instance);
-void LinuxSensapp_handle_sensapp_pushData(struct LinuxSensapp_Instance *_instance, char * sensorID, char * key, int value);
-void LinuxSensapp_handle_sensapp_registerSensor(struct LinuxSensapp_Instance *_instance, char * name);
+void LinuxSensapp_handle_sensapp_registerSensor(struct LinuxSensapp_Instance *_instance, char * node, char * sensor);
+void LinuxSensapp_handle_sensapp_pushData(struct LinuxSensapp_Instance *_instance, char * node, char * sensor, int value, char * unit);
 // Declaration of callbacks for incomming messages:
 
 // Definition of the states:

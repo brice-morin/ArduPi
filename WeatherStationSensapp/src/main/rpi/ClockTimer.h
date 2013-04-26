@@ -29,8 +29,8 @@ int ClockTimer_ClockTimerImpl_remaining_var;
 
 // Declaration of prototypes outgoing messages:
 void ClockTimer_ClockTimerImpl_OnEntry(int state, struct ClockTimer_Instance *_instance);
-void ClockTimer_handle_timer_timer_cancel(struct ClockTimer_Instance *_instance);
 void ClockTimer_handle_timer_timer_start(struct ClockTimer_Instance *_instance, int delay);
+void ClockTimer_handle_timer_timer_cancel(struct ClockTimer_Instance *_instance);
 void ClockTimer_handle_clock_clock_tick(struct ClockTimer_Instance *_instance);
 // Declaration of callbacks for incomming messages:
 void register_ClockTimer_send_timer_timer_timeout_listener(void (*_listener)(struct ClockTimer_Instance*));

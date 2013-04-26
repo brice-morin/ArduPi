@@ -24,13 +24,14 @@ int id;
 // Variables for the current instance state
 int SerialProxy_SensorsDisplayImpl_State;
 // Variables for the properties of the instance
+char * SerialProxy_serialPort_var;
 };
 
 // Declaration of prototypes outgoing messages:
 void SerialProxy_SensorsDisplayImpl_OnEntry(int state, struct SerialProxy_Instance *_instance);
-void SerialProxy_handle_serial_serial_opened(struct SerialProxy_Instance *_instance);
-void SerialProxy_handle_serial_serial_rx(struct SerialProxy_Instance *_instance, uint8_t b);
 void SerialProxy_handle_serializer_serial_tx(struct SerialProxy_Instance *_instance, uint8_t b);
+void SerialProxy_handle_serial_serial_rx(struct SerialProxy_Instance *_instance, uint8_t b);
+void SerialProxy_handle_serial_serial_opened(struct SerialProxy_Instance *_instance);
 // Declaration of callbacks for incomming messages:
 void register_SerialProxy_send_Start_start_listener(void (*_listener)(struct SerialProxy_Instance*));
 void register_SerialProxy_send_serial_serial_open_listener(void (*_listener)(struct SerialProxy_Instance*, char *, int16_t));

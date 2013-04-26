@@ -6,8 +6,8 @@ import "../datatypes.thingml"
  *****************************************************************************/
  
 thing fragment SensAppMsgs {
-    message registerSensor(name : String);
-    message pushData(sensorID : String, key : String, value : Integer);
+    message registerSensor(node : String, sensor : String/*, unit : String*/);//Ideally, unit should be declared once, when registering sensor...
+    message pushData(node : String, sensor : String, value : Integer, unit : String);
 }
 
 thing fragment SensApp includes SensAppMsgs

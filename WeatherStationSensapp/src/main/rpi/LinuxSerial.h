@@ -42,8 +42,8 @@ int LinuxSerial_LinuxSerialImpl_serial_device_var;
 
 // Declaration of prototypes outgoing messages:
 void LinuxSerial_LinuxSerialImpl_OnEntry(int state, struct LinuxSerial_Instance *_instance);
-void LinuxSerial_handle_serial_serial_tx(struct LinuxSerial_Instance *_instance, uint8_t b);
 void LinuxSerial_handle_serial_serial_open(struct LinuxSerial_Instance *_instance, char * device, int16_t baudrate);
+void LinuxSerial_handle_serial_serial_tx(struct LinuxSerial_Instance *_instance, uint8_t b);
 // Declaration of callbacks for incomming messages:
 void register_LinuxSerial_send_serial_serial_rx_listener(void (*_listener)(struct LinuxSerial_Instance*, uint8_t));
 void register_LinuxSerial_send_serial_serial_closed_listener(void (*_listener)(struct LinuxSerial_Instance*));
