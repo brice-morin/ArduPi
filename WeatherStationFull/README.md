@@ -26,4 +26,4 @@ Useful links:
 * http://www.seeedstudio.com/blog/tag/electronic-brick/
 * http://www.mongodb.org/display/DOCS/C+Language+Center
 * https://github.com/SINTEF-9012/sensapp
-* https://github.com/SINTEF-9012/sensapp-admin
+* http://admin.sensapp.org
