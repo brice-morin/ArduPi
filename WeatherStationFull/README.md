@@ -1,7 +1,7 @@
-Weather Station Arduino - Raspberry Pi with MongoDB
+Weather Station Arduino - Raspberry Pi (Full)
 ===================================================
 
-This weather station is pretty much the same as the original one, which I recommend you to test beforehand. On the Raspberry Pi, one big difference though: the data received from the Arduino are now pushed into a local MongoDB database (accessible in REST from any web-browser on the same LAN as the Pi, or anywhere in the world if you Pi as a public IP), in addition of printing temperature and light values on the terminal.
+This weather station combines the MongoDB and the SensApp version _i.e._, it locally stores data and periodically uploads them to SensApp (and clear the local data that have been uploaded).
 
 How-to:
 -------
@@ -14,7 +14,9 @@ To initialize the Raspberry Pi node (in src/main/rpi):
 
 2. compile and run, as usual
 
-3. access your data from the REST interface (please also look at the MongoDB tutorial)
+3. access your local data from the REST interface (please also look at the MongoDB tutorial)
+
+4. access your data in the SensApp server, via the [SensApp-admin](http://sintef-9012.github.io/sensapp-admin/), which you should configure so that it can visualize the data of your SensApp server.
 
 Useful links:
 -------------------
@@ -23,3 +25,5 @@ Useful links:
 * http://arduino.cc/
 * http://www.seeedstudio.com/blog/tag/electronic-brick/
 * http://www.mongodb.org/display/DOCS/C+Language+Center
+* https://github.com/SINTEF-9012/sensapp
+* https://github.com/SINTEF-9012/sensapp-admin
