@@ -1,7 +1,7 @@
 Weather Station Arduino - Raspberry Pi (Full)
 ===================================================
 
-This weather station combines the MongoDB and the SensApp version _i.e._, it locally stores data and periodically uploads them to SensApp (and clear the local data that have been uploaded).
+This weather station combines the [MongoDB](https://github.com/brice-morin/ArduPi/tree/master/WeatherStationMongoDB) and the [SensApp](https://github.com/brice-morin/ArduPi/tree/master/WeatherStationSensapp) versions _i.e._, it locally stores data and periodically uploads them to SensApp (and clear the local data that have been uploaded).
 
 How-to:
 -------
