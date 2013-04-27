@@ -6,7 +6,7 @@ The weather station is composed of:
 * an electronic brick shield, connected via USB to
 * a Raspberry Pi board. 
 
-![Weather Station](https://raw.github.com/brice-morin/ArduPi/master/WeatherStation/images/WeatherStation.jpg)
+![Weather Station](https://raw.github.com/brice-morin/ArduPi/master/WeatherStationLocal/images/WeatherStation.jpg)
 
 The Arduino board contains all the necessary logic to sample temperature and light and locally display these values on a LCD screen.
 
