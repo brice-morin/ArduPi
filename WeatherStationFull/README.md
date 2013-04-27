@@ -6,17 +6,7 @@ This weather station combines the [MongoDB](https://github.com/brice-morin/ArduP
 How-to:
 -------
 
-Please refer to the README of the original weather station for the code related to Arduino. Make sure you upload the new firmware, though.
-
-To initialize the Raspberry Pi node (in src/main/rpi):
-
-1. start mongodb (you can get some information in ArduPi/mongodb-rpi/linux-test to install and run MongoDB. Make sure you can run the test program.)
-
-2. compile and run, as usual
-
-3. access your local data from the REST interface (please also look at the MongoDB tutorial)
-
-4. access your data in the SensApp server, via the [SensApp-admin](http://sintef-9012.github.io/sensapp-admin/), which you should configure so that it can visualize the data of your SensApp server.
+You are invited to read the README of the 2 versions of this Weather station to get to know how to run this one.
 
 Useful links:
 -------------------
