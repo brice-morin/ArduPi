@@ -13,11 +13,12 @@ thing fragment StartMsg {
     message start();    
 }
 
-thing WeatherStation includes RemoteMonitoringMsgs, StartMsg, TimerClient, DBClient
+thing WeatherStation includes RemoteMonitoringMsgs, StartMsg, TimerClient, DBClient, SensAppClient
 {
-    property counter : Integer = 12//upload to sensapp every counter*delay seconds
-    property delay: Integer = 5//when update one sensor every 5 seconds
+    readonly property counter : Integer = 12//upload to sensapp every counter*delay seconds
+    readonly property delay: Integer = 5//when update one sensor every 5 seconds
     property i : Integer = 0
+    property j : Integer = 0
     
     provided port Start 
     {
@@ -54,6 +55,8 @@ thing WeatherStation includes RemoteMonitoringMsgs, StartMsg, TimerClient, DBCli
            on entry do
              print("Starting DB...\n")
              db!db_init()
+             sensapp!registerSensor("weather", "temp")
+             sensapp!registerSensor("weather", "light")
            end
            
            on exit do
@@ -68,7 +71,6 @@ thing WeatherStation includes RemoteMonitoringMsgs, StartMsg, TimerClient, DBCli
            
          on entry do
            timer!timer_start(delay)
-           i = i + 1
          end
            
         internal event t : RemoteControlIn?temperature
@@ -77,6 +79,11 @@ thing WeatherStation includes RemoteMonitoringMsgs, StartMsg, TimerClient, DBCli
             'printf("%u", ' & t.temp & ');'
             print("\n")
             db!push_int("weather", "temp", t.temp)
+            i = i + 1
+            if (i > counter) do
+                db!db_upload("weather", "temp")
+                i = 0
+            end
         end
         
         internal event l : RemoteControlIn?light
@@ -85,6 +92,11 @@ thing WeatherStation includes RemoteMonitoringMsgs, StartMsg, TimerClient, DBCli
             'printf("%u", ' & l.light & ');'
             print("\n")
             db!push_int("weather", "light", l.light)
+            j = j + 1
+            if (j > counter) do
+                db!db_upload("weather", "light")
+                j = 0
+            end
         end
         
         transition -> Process 
@@ -92,11 +104,6 @@ thing WeatherStation includes RemoteMonitoringMsgs, StartMsg, TimerClient, DBCli
         action do
             print("Changing Display on Arduino\n")
             RemoteControlOut!changeDisplay()
-            if (i > counter) do
-                i = 0
-                db!db_upload("weather", "temp")
-                db!db_upload("weather", "light")
-            end
         end            
        }
         
@@ -270,6 +277,7 @@ configuration RaspiNode
     
     instance sensapp : LinuxSensapp
     connector db.sensapp => sensapp.sensapp
+    connector app.sensapp => sensapp.sensapp
     
     // Clock needed by the timer
 	instance c : LinuxClock 

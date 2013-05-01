@@ -13,9 +13,9 @@ extern "C" {
 
 #include "thingml_typedefs.h"
 
-    /*****************************************************************************
-     * Headers for type : LinuxSensapp
-     *****************************************************************************/
+/*****************************************************************************
+ * Headers for type : LinuxSensapp
+ *****************************************************************************/
 
 
 // BEGIN: Code from the c_header annotation LinuxSensapp
@@ -26,28 +26,28 @@ extern "C" {
 // END: Code from the c_header annotation LinuxSensapp
 
 // Definition of the instance stuct:
-    struct LinuxSensapp_Instance {
+struct LinuxSensapp_Instance {
 // Variables for the ID of the instance
-        int id;
+int id;
 // Variables for the current instance state
-        int LinuxSensapp_LinuxSensappImpl_State;
+int LinuxSensapp_LinuxSensappImpl_State;
 // Variables for the properties of the instance
-        char * LinuxSensapp_server_var;
-        char * LinuxSensapp_p_var;
-    };
+char * LinuxSensapp_server_var;
+char * LinuxSensapp_p_var;
+};
 
 // Declaration of prototypes outgoing messages:
-    void LinuxSensapp_LinuxSensappImpl_OnEntry(int state, struct LinuxSensapp_Instance *_instance);
-    void LinuxSensapp_handle_sensapp_pushRawData(struct LinuxSensapp_Instance *_instance, char * data);
-    void LinuxSensapp_handle_sensapp_registerSensor(struct LinuxSensapp_Instance *_instance, char * node, char * sensor);
-    void LinuxSensapp_handle_sensapp_pushData(struct LinuxSensapp_Instance *_instance, char * node, char * sensor, int value, char * unit);
+void LinuxSensapp_LinuxSensappImpl_OnEntry(int state, struct LinuxSensapp_Instance *_instance);
+void LinuxSensapp_handle_sensapp_pushRawData(struct LinuxSensapp_Instance *_instance, char * data);
+void LinuxSensapp_handle_sensapp_pushData(struct LinuxSensapp_Instance *_instance, char * node, char * sensor, int value, char * unit);
+void LinuxSensapp_handle_sensapp_registerSensor(struct LinuxSensapp_Instance *_instance, char * node, char * sensor);
 // Declaration of callbacks for incomming messages:
-    void register_LinuxSensapp_send_sensapp_doneRegister_listener(void (*_listener)(struct LinuxSensapp_Instance*));
-    void register_LinuxSensapp_send_sensapp_failRegister_listener(void (*_listener)(struct LinuxSensapp_Instance*));
-    void register_LinuxSensapp_send_sensapp_donePush_listener(void (*_listener)(struct LinuxSensapp_Instance*));
-    void register_LinuxSensapp_send_sensapp_failPush_listener(void (*_listener)(struct LinuxSensapp_Instance*));
-    void register_LinuxSensapp_send_sensapp_donePushRaw_listener(void (*_listener)(struct LinuxSensapp_Instance*));
-    void register_LinuxSensapp_send_sensapp_failPushRaw_listener(void (*_listener)(struct LinuxSensapp_Instance*));
+void register_LinuxSensapp_send_sensapp_doneRegister_listener(void (*_listener)(struct LinuxSensapp_Instance*));
+void register_LinuxSensapp_send_sensapp_failRegister_listener(void (*_listener)(struct LinuxSensapp_Instance*));
+void register_LinuxSensapp_send_sensapp_donePush_listener(void (*_listener)(struct LinuxSensapp_Instance*));
+void register_LinuxSensapp_send_sensapp_failPush_listener(void (*_listener)(struct LinuxSensapp_Instance*));
+void register_LinuxSensapp_send_sensapp_donePushRaw_listener(void (*_listener)(struct LinuxSensapp_Instance*));
+void register_LinuxSensapp_send_sensapp_failPushRaw_listener(void (*_listener)(struct LinuxSensapp_Instance*));
 
 // Definition of the states:
 #define LINUXSENSAPP_LINUXSENSAPPIMPL_STATE 0

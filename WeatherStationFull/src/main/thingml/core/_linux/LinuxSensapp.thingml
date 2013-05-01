@@ -71,9 +71,9 @@ char* exec(const char* command) {
      sprintf(url, "%s:%s/sensapp/registry/sensors", ' & server & ', ' & p & ');
 	
 	 char command[5135];
-	 sprintf(command, "curl -s --data\'%s\' --header \'Content-Type: application/json; charset=ISO-8859-1\' %s", json, url);
+	 sprintf(command, "curl -s --data \'%s\' --header \'Content-Type: application/json; charset=ISO-8859-1\' %s", json, url);
 
-	 //return exec(command);	
+	 exec(command);	
     '
     end
     end
@@ -83,12 +83,12 @@ char* exec(const char* command) {
     '
         char data[5120];
         sprintf(data, "{\"bn\":\"%s/%s\", \"bu\":\"%s\", \"e\":[{\"v\":%d, \"t\":%d}]}", ' & node & ', ' & sensor & ', ' & unit & ', ' & value & ', timestamp());
-        char command[1024];
+        char command[6144];
 	    sprintf(command, "curl -s --request PUT --data \'%s\' --header \'Content-Type: application/senml+json; charset=ISO-8859-1\' %s:%s/sensapp/dispatch", data, ' & server & ', ' & p & ');
 
         //TODO: we need to parse the result of the command and return a proper status (int)
 
-	   //return exec(command);
+	   exec(command);
     '
         sensapp!donePush()
     end
@@ -100,12 +100,13 @@ char* exec(const char* command) {
     function pushRaw(data : String) : Integer do
 	if (checkConnection() == 0) do
     '
-        char command[1024];
-	    sprintf(command, "curl -s --request PUT --data \'%s\' --header \'Content-Type: application/senml+json; charset=ISO-8859-1\' %s:%s/sensapp/dispatch", ' & data & ', ' & server & ', ' & p & ');
+        char command[6144];
+	    sprintf(command, "curl --request PUT --data \'%s\' --header \'Content-Type: application/senml+json; charset=ISO-8859-1\' %s:%s/sensapp/dispatch", ' & data & ', ' & server & ', ' & p & ');
 
         //TODO: we need to parse the result of the command and return a proper status (int)
 
-	   //return exec(command);
+        printf("\n%s\n\n", command);
+	   exec(command);
     '
         sensapp!donePushRaw()
     end

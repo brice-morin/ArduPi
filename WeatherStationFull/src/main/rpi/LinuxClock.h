@@ -13,24 +13,24 @@ extern "C" {
 
 #include "thingml_typedefs.h"
 
-    /*****************************************************************************
-     * Headers for type : LinuxClock
-     *****************************************************************************/
+/*****************************************************************************
+ * Headers for type : LinuxClock
+ *****************************************************************************/
 
 // Definition of the instance stuct:
-    struct LinuxClock_Instance {
+struct LinuxClock_Instance {
 // Variables for the ID of the instance
-        int id;
+int id;
 // Variables for the current instance state
-        int LinuxClock_ClockImpl_State;
+int LinuxClock_ClockImpl_State;
 // Variables for the properties of the instance
-        int Clock_period_var;
-    };
+int Clock_period_var;
+};
 
 // Declaration of prototypes outgoing messages:
-    void LinuxClock_ClockImpl_OnEntry(int state, struct LinuxClock_Instance *_instance);
+void LinuxClock_ClockImpl_OnEntry(int state, struct LinuxClock_Instance *_instance);
 // Declaration of callbacks for incomming messages:
-    void register_LinuxClock_send_signal_clock_tick_listener(void (*_listener)(struct LinuxClock_Instance*));
+void register_LinuxClock_send_signal_clock_tick_listener(void (*_listener)(struct LinuxClock_Instance*));
 
 // Definition of the states:
 #define LINUXCLOCK_CLOCKIMPL_STATE 0

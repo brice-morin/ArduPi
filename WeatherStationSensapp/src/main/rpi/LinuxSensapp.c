@@ -87,7 +87,7 @@ void f_LinuxSensapp_register(struct LinuxSensapp_Instance *_instance, char * nod
             sprintf(url, "%s:%s/sensapp/registry/sensors", _instance->LinuxSensapp_server_var, _instance->LinuxSensapp_p_var);
 
             char command[5135];
-            sprintf(command, "curl -s --data'%s' --header 'Content-Type: application/json; charset=ISO-8859-1' %s", json, url);
+            sprintf(command, "curl -s --data '%s' --header 'Content-Type: application/json; charset=ISO-8859-1' %s", json, url);
 
             //return exec(command);
 

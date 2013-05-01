@@ -103,7 +103,7 @@ char* registerSensor(const char* node, const char* sensor, const char* descr, co
     sprintf(url, "%s:%s/sensapp/registry/sensors", server, port);
 
     char command[5135];
-    sprintf(command, "curl -s --data'%s' --header 'Content-Type: application/json; charset=ISO-8859-1' %s", json, url);
+    sprintf(command, "curl -s --data '%s' --header 'Content-Type: application/json; charset=ISO-8859-1' %s", json, url);
 
     //sm_put(sm, id, unit);
 

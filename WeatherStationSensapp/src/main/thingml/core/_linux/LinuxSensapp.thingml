@@ -71,7 +71,7 @@ char* exec(const char* command) {
      sprintf(url, "%s:%s/sensapp/registry/sensors", ' & server & ', ' & p & ');
 	
 	 char command[5135];
-	 sprintf(command, "curl -s --data\'%s\' --header \'Content-Type: application/json; charset=ISO-8859-1\' %s", json, url);
+	 sprintf(command, "curl -s --data \'%s\' --header \'Content-Type: application/json; charset=ISO-8859-1\' %s", json, url);
 
 	 //return exec(command);	
     '

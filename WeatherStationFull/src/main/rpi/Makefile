@@ -1,8 +1,8 @@
 CC = cc
 LIBS = -lpthread -lbson -lmongoc
 CFLAGS = -O -w
-SRCS = SerialProxy.c LinuxDB.c MessageSerializer.c ClockTimer.c LinuxSerial.c MessageDeserializer.c LinuxClock.c WeatherStation.c LinuxSensapp.c RaspiNode.c runtime.c
-OBJS = SerialProxy.o LinuxDB.o MessageSerializer.o ClockTimer.o LinuxSerial.o MessageDeserializer.o LinuxClock.o WeatherStation.o LinuxSensapp.o RaspiNode.o runtime.o
+SRCS = LinuxSerial.c SerialProxy.c ClockTimer.c LinuxSensapp.c LinuxClock.c WeatherStation.c MessageSerializer.c MessageDeserializer.c LinuxDB.c RaspiNode.c runtime.c
+OBJS = LinuxSerial.o SerialProxy.o ClockTimer.o LinuxSensapp.o LinuxClock.o WeatherStation.o MessageSerializer.o MessageDeserializer.o LinuxDB.o RaspiNode.o runtime.o
 
 all : RaspiNode
 
