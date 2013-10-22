@@ -11,7 +11,7 @@ thing ButtonScala includes BrickSensor, Button
     
     
     //last value sent by the mock device
-    //can be sent to cliend requesting a value (pull mode)
+    //can be sent to client requesting a value (pull mode)
     property lastValue : Boolean = 'null'
 	
 	function newValue(v : Boolean)@override "true" 
@@ -39,10 +39,12 @@ thing ButtonScala includes BrickSensor, Button
         do
             if (lastValue) 
             do
+                print("press")
                 Button!press()
             end
-            if (lastValue)
+            if (not lastValue)
             do
+                print("release")
                 Button!release()
             end
         end

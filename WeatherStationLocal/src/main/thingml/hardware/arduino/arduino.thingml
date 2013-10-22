@@ -1,7 +1,7 @@
 import "../../thingml.thingml"
 
 enumeration PinMode 
-	@java_type "byte"
+	@java_type "Byte"
     @c_byte_size "1"
 	@c_type "uint8_t"
 {
@@ -10,7 +10,7 @@ enumeration PinMode
 }
 
 enumeration DigitalPin 
-	@java_type "byte"
+	@java_type "Byte"
     @c_byte_size "1"
 	@c_type "uint8_t"
 {
@@ -37,7 +37,7 @@ enumeration DigitalPin
 }
 
 enumeration PWMPin 
-	@java_type "byte"
+	@java_type "Byte"
     @c_byte_size "1"
 	@c_type "uint8_t"
 {
@@ -51,7 +51,7 @@ enumeration PWMPin
 
 
 enumeration AnalogPin 
-	@java_type "byte"
+	@java_type "Byte"
     @c_byte_size "1"
 	@c_type "uint8_t"
 {
@@ -64,7 +64,7 @@ enumeration AnalogPin
 }
 
 enumeration AnalogReference 
-	@java_type "byte"
+	@java_type "Byte"
 	@c_type "uint8_t"
 {
 	DEFAULT @enum_val "1"
@@ -73,7 +73,7 @@ enumeration AnalogReference
 }
 
 enumeration InterruptPin 
-	@java_type "byte"
+	@java_type "Byte"
     @c_byte_size "1"
 	@c_type "uint8_t"
 {
@@ -82,7 +82,7 @@ enumeration InterruptPin
 }
 
 enumeration InterruptTrigger 
-	@java_type "byte"
+	@java_type "Byte"
     @c_byte_size "1"
 	@c_type "uint8_t"
 {

@@ -1,0 +1,157 @@
+import "../../../hardware/devices/_arduino/lcd_screen_sensor_disp.thingml"
+import "../../../hardware/bricks/temperature_sensor.thingml"
+import "../../../hardware/bricks/light_sensor.thingml"
+import "../../../hardware/bricks/_scala/led.thingml"
+import "../../../hardware/bricks/_scala/button.thingml"
+
+import "../weatherAPI.thingml"
+
+thing SimulatorArduino includes RemoteMonitoringMsgs,
+LcdScreenMsgs, TemperatureSensorClient, LightSensorClient,
+LedClient, ButtonClient
+{		
+    property temp : UInt16
+    property light : UInt16
+    
+	readonly property tempDisplay : UInt8 = 0
+    readonly property lightDisplay : UInt8 = 2
+        
+    required port Display @sync_send "true"
+    {	
+		sends initDisplay, refreshDisplay, setDisplay
+	}
+    
+    provided port RemoteControl @sync_send "true"
+    {
+        sends temperature, light
+        receives changeDisplay
+    }
+	
+   	statechart SensorsDisplayImpl init Temp
+   	{
+
+   		on entry do
+        	Display!initDisplay (tempDisplay, "Temperature", "C", 25, 15, 40)  
+            Display!initDisplay (lightDisplay, "Light", "", 0, 0, 1023)
+        end                
+                                                	               
+        internal event m : TemperatureSensor?temperature_value
+        action do
+            print("temperature received: " + m.val)
+            Display!refreshDisplay (tempDisplay, m.val)
+            temp = m.val
+        end
+        
+   	    internal event m : LightSensor?light_value
+        action do
+            print("light received: " + m.val)
+            Display!refreshDisplay (lightDisplay, m.val)
+            light = m.val        
+        end
+        
+   	    state Temp
+        {		
+            on entry Display!setDisplay(tempDisplay)
+            
+            on exit do
+                Led!led_toggle()
+                RemoteControl!temperature(temp)
+                Led!led_toggle()
+            end
+        	
+        	transition switch -> Light
+        	event Button?release
+            event RemoteControl?changeDisplay
+        }
+        
+        
+        state Light
+        {		
+           on entry Display!setDisplay(lightDisplay)
+            
+           on exit do
+                Led!led_toggle()
+                RemoteControl!light(light)
+                Led!led_toggle()
+            end  
+        
+        	transition switch -> Temp
+        	event Button?release
+            event RemoteControl?changeDisplay
+        }
+        
+   	}
+   
+}
+
+thing LcdScreenScala includes LcdScreenMsgs
+@mock "true"
+{
+	provided port Display
+	{
+		receives initDisplay, refreshDisplay, setDisplay
+		sends currentDisplay
+	}
+}
+
+thing LightSensorScala includes LightSensorMsgs, AnalogInputMsgs
+@mock "true"
+{  
+	provided port LightSensor 
+    {
+		receives read_light
+		sends light_value
+	}
+}
+
+thing TemperatureSensorScala includes TemperatureSensorMsgs, AnalogInputMsgs
+@mock "true"
+{   
+
+    
+	provided port TemperatureSensor 
+    {
+		receives read_temperature
+		sends temperature_value
+	}
+}
+
+
+thing WeatherStationRPi includes RemoteMonitoringMsgs
+@mock "true"
+{    
+    required port RemoteControlIn 
+    {
+        receives temperature, light    
+    }
+    
+    required port RemoteControlOut
+    {
+        sends changeDisplay
+    }
+}
+
+configuration WeatherStationLocal
+{
+//Arduino node
+	//Mock-ups
+	instance light_sensor : LightSensorScala
+	instance temp_sensor : TemperatureSensorScala
+	instance led : LedScala
+	instance button : ButtonScala
+    connector button.Sensor => button.SensorMockUp
+    instance display : LcdScreenScala
+
+    //Core components.
+	instance app : SimulatorArduino
+	connector app.TemperatureSensor => temp_sensor.TemperatureSensor
+    connector app.LightSensor => light_sensor.LightSensor
+    connector app.Button => button.Button
+    connector app.Led => led.Led
+    connector app.Display => display.Display
+    
+//Raspberry Pi node
+    instance rpi : WeatherStationRPi
+    connector rpi.RemoteControlIn => app.RemoteControl
+    connector rpi.RemoteControlOut => app.RemoteControl
+}
