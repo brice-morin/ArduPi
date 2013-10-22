@@ -38,6 +38,17 @@ Note: We assume the Arduino board is connected to your Raspberry Pi on /dev/ttyA
 
 Advanced users are invited to fully regenerate the source code from the ThingML specification. 
 
+Simulator:
+----------
+
+This simulator is intended to run on a normal PC, as it uses Java (which could run on the Pi), but also Scala and Maven, which might be a bit heavy for the Pi. It is generated using the same ThingML models that have been used to generate the real program.
+
+To compile and run the simulator:
+
+	mvn clean install exec:java -DmainClass="org.thingml.generated.WeatherStationLocal"
+	
+> You need Maven properly installed on your computer, with a proper JDK (not JRE)
+
 Useful links:
 -------------------
 * http://thingml.org/
