@@ -8,4 +8,4 @@ Tested with:
 * Arduino UNO, see http://www.arduino.cc/en/Main/arduinoBoardUno
 * Arduino IDE 0022, see http://arduino.cc/en/Main/Software
 
-== **Powered by www.ThingML.org** ==
+> **Powered by www.ThingML.org**
