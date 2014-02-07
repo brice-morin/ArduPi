@@ -30,7 +30,7 @@ Electronic bricks should be connected on the Arduino shield as follows:
 
 The code located in `src/main/java` and `src/main/scala` should be compiled and runned with Maven
 
-	mvn clean install exec:java -DmainClass="org.thingml.generated.JavaNode"
+	mvn clean install exec:java -Dexec.mainClass="org.thingml.generated.JavaNode"
 	
 > You need Maven properly installed on your computer, with a proper JDK (not JRE)
 
