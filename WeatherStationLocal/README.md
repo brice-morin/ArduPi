@@ -45,7 +45,7 @@ This simulator is intended to run on a normal PC, as it uses Java (which could r
 
 To compile and run the simulator:
 
-	mvn clean install exec:java -DmainClass="org.thingml.generated.WeatherStationLocal"
+	mvn clean install exec:java -Dexec.mainClass="org.thingml.generated.WeatherStationLocal"
 	
 > You need Maven properly installed on your computer, with a proper JDK (not JRE)
 
