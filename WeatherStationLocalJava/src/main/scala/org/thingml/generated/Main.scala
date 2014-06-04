@@ -11,12 +11,7 @@ import org.sintef.smac._
 object Main {
 
 def main(args: Array[String]): Unit = {
-//Channels
-val c_29485472 = new Channel
-val c_30476358 = new Channel
-val c_7757269 = new Channel
-val c_17464691 = new Channel
-val c_18472963 = new Channel
+
 //Initializing arrays
 val PacketManager_buffer_var_JavaNode_deserializer = new Array[Byte](16)
 //Initializing arrays
@@ -28,49 +23,32 @@ val WeatherStation_JavaNode_app = new WeatherStation()
 val SerialScala_JavaNode_serial = new SerialScala(SerialScala_serialPort_var = "COM8".asInstanceOf[String])
 val TimerScala_JavaNode_t = new TimerScala(_TimerScala_scalaTimer_var = null.asInstanceOf[org.thingml.utils.timer.Timer])
 //Bindings
-c_29485472.connect(
+new Channel(
 MessageDeserializer_JavaNode_deserializer.getPort("in").get,
 SerialScala_JavaNode_serial.getPort("IOStream").get
 )
-c_29485472.connect(
-SerialScala_JavaNode_serial.getPort("IOStream").get,
-MessageDeserializer_JavaNode_deserializer.getPort("in").get
-)
 
-c_30476358.connect(
+  new Channel(
 MessageDeserializer_JavaNode_deserializer.getPort("RemoteControl").get,
 WeatherStation_JavaNode_app.getPort("RemoteControlIn").get
 )
-c_30476358.connect(
-WeatherStation_JavaNode_app.getPort("RemoteControlIn").get,
-MessageDeserializer_JavaNode_deserializer.getPort("RemoteControl").get
-)
 
-c_7757269.connect(
+
+  new Channel(
 MessageSerializer_JavaNode_serializer.getPort("out").get,
 SerialScala_JavaNode_serial.getPort("IOStream").get
 )
-c_7757269.connect(
-SerialScala_JavaNode_serial.getPort("IOStream").get,
-MessageSerializer_JavaNode_serializer.getPort("out").get
-)
 
-c_17464691.connect(
+
+  new Channel(
 MessageSerializer_JavaNode_serializer.getPort("RemoteControl").get,
 WeatherStation_JavaNode_app.getPort("RemoteControlOut").get
 )
-c_17464691.connect(
-WeatherStation_JavaNode_app.getPort("RemoteControlOut").get,
-MessageSerializer_JavaNode_serializer.getPort("RemoteControl").get
-)
 
-c_18472963.connect(
+
+  new Channel(
 WeatherStation_JavaNode_app.getPort("timer").get,
 TimerScala_JavaNode_t.getPort("timer").get
-)
-c_18472963.connect(
-TimerScala_JavaNode_t.getPort("timer").get,
-WeatherStation_JavaNode_app.getPort("timer").get
 )
 
 //Starting Things
@@ -79,11 +57,7 @@ MessageSerializer_JavaNode_serializer.asInstanceOf[Component].start
 WeatherStation_JavaNode_app.asInstanceOf[Component].start
 SerialScala_JavaNode_serial.asInstanceOf[Component].start
 TimerScala_JavaNode_t.asInstanceOf[Component].start
-c_29485472.start
-c_30476358.start
-c_7757269.start
-c_17464691.start
-c_18472963.start
+
 }
 
 }

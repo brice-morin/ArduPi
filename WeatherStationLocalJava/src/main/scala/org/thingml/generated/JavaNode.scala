@@ -677,7 +677,7 @@ case None => Logger.warning("no port RemoteControlOut You may consider revising 
 /**
  * Definitions for type : SerialScala
  **/
-class SerialScala(val SerialScala_serialPort_var : String) extends Component with org.thingml.utils.comm.SerialThingML{
+class SerialScala(val SerialScala_serialPort_var : String) extends Component with org.thingml.comm.rxtx.SerialObserver{
 
 //Companion object
 object SerialScala{
@@ -693,7 +693,9 @@ val receive_bytes_o = Receive_bytes.getName
 
 }
 
-new Port(SerialScala.IOStreamPort.getName, List(SerialScala.IOStreamPort.in.write_bytes_i), List(SerialScala.IOStreamPort.out.receive_bytes_o), this).start
+  var serial : org.thingml.comm.rxtx.Serial4ThingML = null
+
+  new Port(SerialScala.IOStreamPort.getName, List(SerialScala.IOStreamPort.in.write_bytes_i), List(SerialScala.IOStreamPort.out.receive_bytes_o), this).start
 override def receive(SerialScala_receive_byte_var : Array[Byte]) : Unit = {
 Logger.debug("Executing receive ...")
 val handler = this
@@ -708,7 +710,7 @@ override def getBehavior = parent
 val parent : StateMachine = new StateMachine(this, keepHistory, root)
 override def onEntry() = {
 Logger.debug("behavior.onEntry")
-new org.thingml.comm.rxtx.Serial4ThingML(SerialScala_serialPort_var, root.asInstanceOf[org.thingml.utils.comm.SerialThingML])
+serial = new org.thingml.comm.rxtx.Serial4ThingML(SerialScala_serialPort_var, root.asInstanceOf[org.thingml.comm.rxtx.SerialObserver])
 }
 
 override def onExit() = {
@@ -740,7 +742,7 @@ case class InternalTransition_default_10984059 extends InternalTransitionAction 
 override def executeActions() = {
 Logger.debug("t_self_default_10984059.executeActions")
 Logger.info((("  serial.write: " + getEvent(SerialScala.IOStreamPort.in.write_bytes_i, SerialScala.IOStreamPort.getName).get.asInstanceOf[Write_bytes].b.mkString("[", ", ", "]"))).toString)
-root.asInstanceOf[org.thingml.utils.comm.SerialThingML].sendData(getEvent(SerialScala.IOStreamPort.in.write_bytes_i, SerialScala.IOStreamPort.getName).get.asInstanceOf[Write_bytes].b)
+serial.sendData(getEvent(SerialScala.IOStreamPort.in.write_bytes_i, SerialScala.IOStreamPort.getName).get.asInstanceOf[Write_bytes].b)
 }
 
 }
