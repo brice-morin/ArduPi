@@ -1,0 +1,55 @@
+repo "http://repo1.maven.org/maven2"
+repo "http://maven.thingml.org"
+
+//include standard Kevoree libraries
+include mvn:org.kevoree.library.java:org.kevoree.library.java.javaNode:release
+include mvn:org.kevoree.library.java:org.kevoree.library.java.channels:release
+include mvn:org.kevoree.library.java:org.kevoree.library.java.ws:release
+
+//include external libraries that may be needed by ThingML components
+include mvn:org.thingml:org.thingml.utils:0.6.0-SNAPSHOT
+
+//include Kevoree wrappers of ThingML components
+include mvn:org.thingml.generated:JavaNode:1.0-SNAPSHOT
+
+//create a default Java node
+add node0 : JavaNode
+set node0.log = "false"
+//create a default group to manage the node(s)
+add sync : WSGroup
+set sync.port/node0 = "9000"
+set sync.master = "node0"
+attach node0 sync
+
+//instantiate Kevoree/ThingML components
+add node0.MessageDeserializer_JavaNode_deserializer : KMessageDeserializer
+add node0.SerialJava_JavaNode_serial : KSerialJava
+add node0.MessageSerializer_JavaNode_serializer : KMessageSerializer
+add node0.TimerJava_JavaNode_t : KTimerJava
+add node0.WeatherStation_JavaNode_app : KWeatherStation
+
+
+//instantiate Kevoree channels and bind component
+add channel_1089173424_re : SyncBroadcast
+bind node0.MessageSerializer_JavaNode_serializer.RemoteControlPort channel_1089173424_re
+bind node0.WeatherStation_JavaNode_app.RemoteControlOutPort_out channel_1089173424_re
+add channel_1474567172 : SyncBroadcast
+bind node0.MessageSerializer_JavaNode_serializer.outPort_out channel_1474567172
+bind node0.SerialJava_JavaNode_serial.IOStreamPort channel_1474567172
+add channel_433749870 : SyncBroadcast
+bind node0.MessageDeserializer_JavaNode_deserializer.RemoteControlPort_out channel_433749870
+bind node0.WeatherStation_JavaNode_app.RemoteControlInPort channel_433749870
+add channel_1474192321 : SyncBroadcast
+bind node0.WeatherStation_JavaNode_app.timerPort_out channel_1474192321
+bind node0.TimerJava_JavaNode_t.timerPort channel_1474192321
+add channel_1474192321_re : SyncBroadcast
+bind node0.WeatherStation_JavaNode_app.timerPort channel_1474192321_re
+bind node0.TimerJava_JavaNode_t.timerPort_out channel_1474192321_re
+add channel_1231503608_re : SyncBroadcast
+bind node0.MessageDeserializer_JavaNode_deserializer.inPort channel_1231503608_re
+bind node0.SerialJava_JavaNode_serial.IOStreamPort_out channel_1231503608_re
+start sync
+start node0
+
+
+
