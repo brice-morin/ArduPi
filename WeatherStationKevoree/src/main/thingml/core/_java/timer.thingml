@@ -1,0 +1,68 @@
+import "../timer.thingml"
+
+datatype JavaTimer
+@java_type "java.util.Timer";
+
+datatype JavaTimerTask
+@java_type "java.util.TimerTask";
+
+// Manage a set of software timers.
+thing TimerJava includes Timer
+@pim "Timer"
+@platform "java"
+@java_interface "org.thingml.timer.TimerObserver"
+@thingml_maven_dep "org.thingml.utils"
+{
+    
+    /*message ready();
+    
+    provided port timer_lifecycle {
+        sends ready
+    }*/
+
+    readonly property javaTimer : JavaTimer = 'new java.util.Timer()'
+    property javaTimerTask : JavaTimerTask
+
+    function onTimeout()@override "true" 
+    do
+        //print("timeout")
+        timer!timer_timeout()
+    end
+    
+    function cancel() 
+    do
+      //print("cancel")
+      if(not (javaTimerTask == 'null'))
+      do
+        '' & javaTimerTask & '.cancel();'
+        javaTimerTask = 'null'
+      end
+      '' & javaTimer & '.purge();'
+    end
+    
+    function start(delay : Integer)
+    do
+        //print("start " + delay)
+        cancel()
+        javaTimerTask = 'new org.thingml.timer.ThingMLTimerTask(this)'
+        '' & javaTimer & '.schedule(' & javaTimerTask & ', (long)' & delay & ');'
+    end
+    
+    statechart SoftTimer init default {
+        state default {
+          on entry print("Timer ready!")
+            
+          internal start
+            event m : timer?timer_start
+            guard m.delay > 0
+            action do
+                print("timer start")
+                start(m.delay)
+            end
+            
+          internal cancel
+            event m : timer?timer_cancel
+            action cancel()    
+        }
+    }
+}

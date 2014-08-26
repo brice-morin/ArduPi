@@ -1,0 +1,78 @@
+/* ThingML Framework */
+
+import "../comm.thingml"
+
+datatype JavaSerial
+@java_type "org.thingml.comm.rxtx.Serial4ThingML";
+
+thing SerialJava includes IOByteArray
+@pim "IOStream"
+@platform "java"
+@java_interface "org.thingml.comm.rxtx.SerialObserver"
+@thingml_maven_dep "org.thingml.utils"
+{
+    /*message ready();
+    message killed();
+    
+    provided port serial_lifecycle {
+        sends ready, killed    
+    }*/
+    
+    readonly property serialPort : String = "COM4"
+    property serial : JavaSerial 
+        
+	function receive(byte : Byte[18]) 
+    @override "true"
+    do
+        //DEBUG
+        /*'for(byte b :' & byte & ') {'
+        print("  serial has received: " + 'b')
+        '}'*/
+         
+        IOStream!receive_bytes(byte)
+    end
+    
+    function initSerial() do 
+        serial = 'new org.thingml.comm.rxtx.Serial4ThingML(' & serialPort & ', this)'  
+        //serial_lifecycle!ready()
+    end
+    
+    function killSerial() do
+        '' & serial & '.close();'
+        //serial_lifecycle!killed()
+    end
+        
+
+    statechart behavior init default {
+        on entry do
+            initSerial()    
+            print("Serial port ready!")    
+        end
+        
+        on exit do
+            killSerial()
+            print("Serial port killed, RIP!")
+        end
+        
+        state default {
+            on entry do
+                print("Serial port ready indeed!")
+            end
+            
+            internal event wb : IOStream?write_bytes
+            action do
+               
+                //DEBUG
+                /*'for(byte b :' & wb.b & ') {'
+                print("  serial will write: " + 'b')
+                '}'*/
+               
+                '' & serial '.sendData(' & wb.b & ');'
+            end
+        }    
+    }    
+}
+
+/*configuration TestJavaSerial {
+    instance serial : SerialJava
+}*/

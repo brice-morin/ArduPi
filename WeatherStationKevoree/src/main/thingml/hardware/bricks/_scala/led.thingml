@@ -1,0 +1,39 @@
+import "brickAPI.thingml"
+import "../led.thingml"
+
+thing LedScala includes Brick, Led
+@pim "Led"
+@platform "Scala"
+{
+    set device = 'new org.thingml.devices.LedDemo()'
+    
+    statechart LedImpl init LedOff 
+    {    
+    
+        state LedOff 
+        {
+            on entry '' & device & '.asInstanceOf[org.thingml.devices.LedDemo].off()'
+            
+            transition switch_on -> LedOn 
+            event Led?led_on 
+            
+            transition toggle_on -> LedOn 
+            event Led?led_toggle
+            action print("toggling (fast!!!)")
+            
+        }
+                
+        state LedOn 
+        {
+            on entry '' & device & '.asInstanceOf[org.thingml.devices.LedDemo].on()'
+            
+            transition switch_off -> LedOff 
+            event Led?led_off 
+            
+            transition toggle_off -> LedOff 
+            event Led?led_toggle
+            action print("toggling (fast!!!)")
+        }
+           
+    }
+}
