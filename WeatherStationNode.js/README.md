@@ -39,6 +39,8 @@ You can now run the executable (obtained from compiling the source code using ma
 
 > We assume you have [Node.js installed on your Raspberry Pi](http://raspberryalphaomega.org.uk/2014/06/11/installing-and-using-node-js-on-raspberry-pi/#comment-34950), and that the Arduino board is connected to your Raspberry Pi on /dev/ttyACM0 before you run the program.
 
+To remotely force the Arduino to send a value (via the Raspberry Pi), send a WebSocket request (e.g. via the Chrome REST console) to the Pi `ws://<IP-of-you-Pi>:8080/` with the following payload `{"message":"changeDisplay","port":"gui"}` 
+
 Advanced users are invited to fully regenerate the source code from the ThingML specification. 
 
 
